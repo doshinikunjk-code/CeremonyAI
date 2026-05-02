@@ -601,9 +601,11 @@ async function speak(text, lang) {
     const blob = await r.blob();
     const url = URL.createObjectURL(blob);
     const audio = new Audio(url);
-    // Natural human conversation speed per language
-    const rates = { en: 0.92, hi: 1.05, pa: 0.95 };
-    audio.playbackRate = rates[resolvedLang] || 0.95;
+    // Tuned per language — human conversation pace
+    const rates = { en: 1.08, hi: 0.92, pa: 1.05 };
+    audio.playbackRate = rates[resolvedLang] || 1.0;
+    // Punjabi volume boost — Noor is a quieter voice
+    audio.volume = resolvedLang === 'pa' ? 1.5 : 1.0;
     currentAudio = audio;
     isSpeaking = true;
     audio.play().catch(e => { console.warn('Audio play failed:', e); isSpeaking = false; });
