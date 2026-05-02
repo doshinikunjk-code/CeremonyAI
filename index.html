@@ -579,13 +579,12 @@ async function speak(text, lang) {
     .replace(/—/g, ', ').replace(/•/g, '').replace(/\n/g, '. ').replace(/  +/g, ' ').trim();
   if (!clean) return;
 
-  // Resolve language — detect from script if auto
+  // Resolve language — text script detection is most reliable
   let resolvedLang = (lang && lang !== 'auto') ? lang : LANG;
-  if (resolvedLang === 'auto') {
-    if (/[\u0A00-\u0A7F]/.test(clean)) resolvedLang = 'pa';       // Gurmukhi = Punjabi
-    else if (/[\u0900-\u097F]/.test(clean)) resolvedLang = 'hi';  // Devanagari = Hindi
-    else resolvedLang = 'en';
-  }
+  if (resolvedLang === 'auto') resolvedLang = 'en';
+  // Always override with script detection if non-Latin characters found
+  if (/[\u0A00-\u0A7F]/.test(clean)) resolvedLang = 'pa';
+  else if (/[\u0900-\u097F]/.test(clean)) resolvedLang = 'hi';
 
   try {
     const r = await fetch('/api/tts', {
@@ -763,11 +762,23 @@ setInterval(() => { TYPING = false; }, 15000);
 
 function setLang(lang, btn) {
   LANG = lang;
+  // Clear history when switching language so AI starts fresh in new language
+  HISTORY = [];
   document.querySelectorAll('.ltab').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   const badge = document.getElementById('lang-badge');
   const labels = { auto: '🔄 Auto', en: '🇨🇦 EN', pa: '🇮🇳 PA', hi: '🇮🇳 HI' };
   if (badge) badge.textContent = labels[lang] || '🔄 Auto';
+  // Clear chat and re-greet in new language
+  const body = document.getElementById('chat-body');
+  if (body) body.innerHTML = '';
+  const greets = {
+    en: 'Hello! Welcome to Ceremony Indian Cuisine. What would you like to order today?',
+    pa: 'ਸਤ ਸ੍ਰੀ ਅਕਾਲ ਜੀ! Ceremony Indian Cuisine ਵਿੱਚ ਤੁਹਾਡਾ ਸੁਆਗਤ ਹੈ। ਕੀ ਚਾਹੀਦਾ ਤੁਹਾਨੂੰ?',
+    hi: 'नमस्ते जी! Ceremony Indian Cuisine में आपका स्वागत है। आज क्या लेना चाहेंगे?',
+    auto: 'Welcome to Ceremony Indian Cuisine! What would you like to order today?'
+  };
+  setTimeout(() => addMsg('ai', greets[lang] || greets.auto), 200);
 }
 
 // ── SYSTEM PROMPTS ────────────────────────────────────────────────────────────
@@ -877,12 +888,23 @@ function playTyping() {
 function stopTyping() { if (typingTimer) { clearInterval(typingTimer); typingTimer = null; } }
 
 // ── BUBBLE HELPERS ────────────────────────────────────────────────────────────
+function detectLangFromText(text) {
+  if (/[\u0A00-\u0A7F]/.test(text)) return 'pa';       // Gurmukhi
+  if (/[\u0900-\u097F]/.test(text)) return 'hi';       // Devanagari
+  return 'en';
+}
+
 function addMsg(side, text) {
   const b = document.getElementById('chat-body');
   const r = document.createElement('div'); r.className = 'mr' + (side==='ai'?' ai':'');
   const bubble = document.createElement('div'); bubble.className = 'bb ' + (side==='ai'?'ai-s':'usr');
   bubble.textContent = text; r.appendChild(bubble);
-  if (side === 'ai') addSpeakerBtn(bubble, text, LANG);
+  if (side === 'ai') {
+    // Always detect lang from actual text script — most reliable
+    const msgLang = (LANG !== 'auto') ? LANG : detectLangFromText(text);
+    bubble.dataset.lang = msgLang;
+    addSpeakerBtn(bubble, text, msgLang);
+  }
   b.appendChild(r); b.scrollTop = b.scrollHeight;
   requestAnimationFrame(() => r.classList.add('show'));
   return bubble;
@@ -963,7 +985,9 @@ async function so() {
     const reply = await callClaude(HISTORY);
     removeTyping(); stopTyping();
     addMsg('ai', reply.trim());
-    speak(reply.trim(), LANG);
+    // Detect lang from actual reply text — most reliable for correct voice
+    const replyLang = (LANG !== 'auto') ? LANG : detectLangFromText(reply);
+    speak(reply.trim(), replyLang);
     HISTORY.push({ role:'assistant', content:reply.trim() });
 
     // Auto-confirm if order complete phrase detected
@@ -989,7 +1013,7 @@ async function so() {
     removeTyping(); stopTyping();
     const fallback = getOffline(val);
     addMsg('ai', fallback);
-    speak(fallback, LANG);
+    speak(fallback, (LANG !== 'auto') ? LANG : 'en');
     HISTORY.push({ role:'assistant', content:fallback });
   }
   TYPING = false;
@@ -998,8 +1022,9 @@ async function so() {
 }
 
 function qm(text) {
+  if (TYPING) return;
   const inp = document.getElementById('chat-in');
-  if (inp) { inp.value = text; so(); }
+  if (inp && !inp.disabled) { inp.value = text; so(); }
 }
 
 // ── WA MIC ────────────────────────────────────────────────────────────────────
@@ -1023,6 +1048,13 @@ function toggleWAMic(btn) {
 
 // ── CALL DEMO ─────────────────────────────────────────────────────────────────
 let callActive=false, callRec=null, callHistory=[], callMicOn=false;
+
+// Detect language from actual text characters
+function detectLangFromText(text) {
+  if (/[\u0A00-\u0A7F]/.test(text)) return 'pa';       // Gurmukhi
+  if (/[\u0900-\u097F]/.test(text)) return 'hi';        // Devanagari
+  return 'en';
+}
 const CALL_SYS = `You answer calls at Ceremony Indian Cuisine — "Celebrate the Taste of India". Mississauga, Ontario.
 You are NOT AI — you are a real warm team member. 1-2 sentences max. Natural, warm, like a local.
 Match caller's language EXACTLY — Punjabi, Hindi, or English. Auto-detect and match.
@@ -1072,8 +1104,15 @@ function callSpeak(text, lang) {
   addCallLog(text,'ai');
   document.getElementById('call-ripple').style.display='flex';
   setCS('Ceremony AI speaking…','var(--saffron)');
-  speak(text, lang || LANG);
-  setTimeout(()=>{ document.getElementById('call-ripple').style.display='none'; if(callActive) setCS('Tap 🎤 to speak','var(--green2)'); }, 4000);
+  const resolvedLang = (lang && lang !== 'auto') ? lang : detectLangFromText(text);
+  speak(text, resolvedLang);
+  // Estimate duration: ~100ms per word, min 2s
+  const words = text.split(' ').length;
+  const duration = Math.max(2000, words * 350);
+  setTimeout(()=>{
+    document.getElementById('call-ripple').style.display='none';
+    if(callActive) setCS('Tap 🎤 to speak','var(--green2)');
+  }, duration);
 }
 async function handleCallSpeech(text) {
   if (!text||!callActive) return;
@@ -1082,7 +1121,12 @@ async function handleCallSpeech(text) {
   try {
     const r=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:100,system:CALL_SYS,messages:callHistory})});
     const d=await r.json(); const reply=d.content?.[0]?.text?.trim();
-    if(reply){callHistory.push({role:'assistant',content:reply}); callSpeak(reply, LANG);}
+    if(reply){
+      callHistory.push({role:'assistant',content:reply});
+      // Detect language from actual reply text for correct voice
+      const replyLang = (LANG !== 'auto') ? LANG : detectLangFromText(reply);
+      callSpeak(reply, replyLang);
+    }
   } catch(e) { setCS('Connection issue','#C03030'); }
 }
 function toggleCallMic() {
@@ -1092,11 +1136,24 @@ function toggleCallMic() {
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if (!SR) { const t=prompt('Type what you want to say:'); if(t) handleCallSpeech(t); return; }
   if (currentAudio) { currentAudio.pause(); currentAudio=null; }
-  callRec=new SR(); callRec.lang='en-IN'; callRec.continuous=false; callRec.interimResults=false;
+  callRec=new SR();
+  callRec.lang = LANG==='pa'?'pa-IN':LANG==='hi'?'hi-IN':'en-IN';
+  callRec.continuous=false; callRec.interimResults=false;
   callRec.onstart=()=>{callMicOn=true;setCS('🎤 Listening…','#FF8080');btn.style.background='linear-gradient(135deg,#7A1010,#C02020)';document.getElementById('call-ico').textContent='🎤';};
-  callRec.onresult=e=>{const t=e.results[0][0].transcript;callMicOn=false;btn.style.background='linear-gradient(135deg,var(--saffron),var(--saffron2))';handleCallSpeech(t);};
-  callRec.onerror=()=>{callMicOn=false;btn.style.background='linear-gradient(135deg,var(--saffron),var(--saffron2))';const t=prompt('Mic unavailable — type:');if(t)handleCallSpeech(t);};
-  callRec.onend=()=>{callMicOn=false;};
+  callRec.onresult=e=>{
+    const t=e.results[0][0].transcript;
+    callMicOn=false;
+    btn.style.background='linear-gradient(135deg,var(--saffron),var(--saffron2))';
+    document.getElementById('call-ico').textContent='🔊';
+    handleCallSpeech(t);
+  };
+  callRec.onerror=e=>{
+    callMicOn=false;
+    btn.style.background='linear-gradient(135deg,var(--saffron),var(--saffron2))';
+    console.warn('Mic error:', e.error);
+    if (e.error === 'not-allowed') { const t=prompt('Mic blocked — type your message:'); if(t) handleCallSpeech(t); }
+  };
+  callRec.onend=()=>{ callMicOn=false; };
   callRec.start();
 }
 
