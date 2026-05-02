@@ -12,7 +12,7 @@ const EL_KEY     = process.env.EL_KEY;
 const VOICES = {
   en: process.env.EL_VOICE_EN,
   hi: process.env.EL_VOICE_HI,
-  pa: process.env.EL_VOICE_PA,
+  pa: 'vT0wMbLG5dssaBsksrb6',    // Noor — Punjabi female, Doaba accent, natural clarity
 };
 
 console.log('CeremonyAI starting...');
@@ -64,17 +64,19 @@ app.post('/api/tts', async (req, res) => {
 
     console.log('TTS | lang:', lang, '| voice:', voiceId, '| model:', modelId, '| text[:50]:', fixed?.substring(0,50));
 
+    // Per-language voice settings — tuned for consistent pace across EN/HI/PA
+    const voiceSettings = {
+      en: { stability: 0.50, similarity_boost: 0.88, style: 0.15, use_speaker_boost: true },
+      hi: { stability: 0.45, similarity_boost: 0.88, style: 0.20, use_speaker_boost: true },
+      pa: { stability: 0.55, similarity_boost: 0.75, style: 0.10, use_speaker_boost: true },  // Noor — lower similarity (not a clone), higher stability for consistent pace
+    };
+
     const r = await axios.post(
       `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
       {
         text: fixed,
         model_id: modelId,
-        voice_settings: {
-          stability: lang === 'en' ? 0.50 : 0.45,        // Slightly more expressive for Indian languages
-          similarity_boost: 0.88,
-          style: lang === 'en' ? 0.15 : 0.25,            // More natural warmth for Hindi/Punjabi
-          use_speaker_boost: true
-        }
+        voice_settings: voiceSettings[lang] || voiceSettings.en
       },
       {
         headers: {
