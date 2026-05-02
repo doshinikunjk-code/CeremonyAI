@@ -1365,7 +1365,7 @@ async function startCallDemo() {
         model: 'nova-2-general',
         language: callLang === 'hi' ? 'hi' : 'en-IN',
         smartFormat: true,
-        endpointing: 200,
+        endpointing: 400,
       },
       backgroundDenoisingEnabled: true,
       backgroundSound: 'off',
@@ -1373,7 +1373,8 @@ async function startCallDemo() {
       maxDurationSeconds: 1800,
       responseDelaySeconds: 0,
       llmRequestDelaySeconds: 0,
-      numWordsToInterruptAssistant: 1,
+      numWordsToInterruptAssistant: 3,
+      endCallPhrases: ['bye', 'goodbye', 'thank you bye', 'shukriya', 'dhanyawad'],
     });
   } catch(e) {
     console.error('Vapi start error:', e);
