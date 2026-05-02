@@ -46,7 +46,7 @@ app.post('/api/tts', async (req, res) => {
     const { text, lang } = req.body;
 
     // Fix common mispronunciations before sending to ElevenLabs
-    const fixed = text
+    let fixed = text
       .replace(/\bVeg\b/g, 'Vej')
       .replace(/\bveg\b/g, 'vej')
       .replace(/\bNon-Veg\b/g, 'Non-Vej')
@@ -57,18 +57,30 @@ app.post('/api/tts', async (req, res) => {
       .replace(/\bGulab Jamun\b/gi, 'Gulab Jamoon')
       .replace(/\bBiryani\b/gi, 'Biryaani');
 
+    // Punjabi-specific: soften Ceremony name pronunciation + common food words
+    if (lang === 'pa') {
+      fixed = fixed
+        .replace(/Ceremony/g, 'Seremoni')           // Softer C sound
+        .replace(/ਚਾਹੀਦਾ/g, 'ਚਾਹੀਦਾ')              // Keep natural
+        .replace(/ਕੀ ਚਾਹੀਦਾ/g, 'ਕੀ ਚਾਹੀਦਾ')        // Keep natural  
+        .replace(/\$(\d+)/g, '$1 ਡਾਲਰ')            // "$18" → "18 ਡਾਲਰ" — more natural Punjabi
+        .replace(/total/gi, 'ਕੁੱਲ')                  // "total" → Punjabi word
+        .replace(/order/gi, 'ਆਰਡਰ');
+    }
+
     const voiceId = VOICES[lang] || VOICES.en;
 
-    // Use turbo for speed (~300ms vs ~1200ms), still supports Punjabi + Hindi
-    const modelId = (lang === 'en') ? 'eleven_turbo_v2_5' : 'eleven_multilingual_v2';
+    // Turbo for speed on EN. Multilingual v2 for HI. Turbo v2.5 also handles Punjabi more naturally.
+    const modelId = (lang === 'hi') ? 'eleven_multilingual_v2' : 'eleven_turbo_v2_5';
 
     console.log('TTS | lang:', lang, '| voice:', voiceId, '| model:', modelId, '| text[:50]:', fixed?.substring(0,50));
 
-    // Per-language voice settings — tuned for consistent pace across EN/HI/PA
+    // Per-language voice settings
     const voiceSettings = {
       en: { stability: 0.50, similarity_boost: 0.88, style: 0.15, use_speaker_boost: true },
       hi: { stability: 0.45, similarity_boost: 0.88, style: 0.20, use_speaker_boost: true },
-      pa: { stability: 0.55, similarity_boost: 0.75, style: 0.10, use_speaker_boost: true },  // Noor — lower similarity (not a clone), higher stability for consistent pace
+      // Noor: low stability = more natural/expressive, low style = not dramatic, low similarity = lets her natural voice through
+      pa: { stability: 0.30, similarity_boost: 0.60, style: 0.05, use_speaker_boost: false },
     };
 
     const r = await axios.post(
