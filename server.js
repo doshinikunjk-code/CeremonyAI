@@ -70,17 +70,20 @@ app.post('/api/tts', async (req, res) => {
 
     const voiceId = VOICES[lang] || VOICES.en;
 
-    // Turbo for speed on EN. Multilingual v2 for HI. Turbo v2.5 also handles Punjabi more naturally.
-    const modelId = (lang === 'hi') ? 'eleven_multilingual_v2' : 'eleven_turbo_v2_5';
+    // eleven_multilingual_v2 for all — better natural human tone than turbo
+    const modelId = 'eleven_multilingual_v2';
 
     console.log('TTS | lang:', lang, '| voice:', voiceId, '| model:', modelId, '| text[:50]:', fixed?.substring(0,50));
 
-    // Per-language voice settings
+    // All languages — same warm natural human conversation profile
+    // stability: 0.40 = natural variation, not robotic, not erratic
+    // similarity_boost: 0.75 = stays close to voice without forcing it
+    // style: 0.10 = minimal style exaggeration — just a real person talking
+    // use_speaker_boost: false — this adds harshness/aggression, keep off
     const voiceSettings = {
-      en: { stability: 0.50, similarity_boost: 0.88, style: 0.15, use_speaker_boost: true },
-      hi: { stability: 0.45, similarity_boost: 0.88, style: 0.20, use_speaker_boost: true },
-      // Noor: low stability = more natural/expressive, low style = not dramatic, low similarity = lets her natural voice through
-      pa: { stability: 0.30, similarity_boost: 0.60, style: 0.05, use_speaker_boost: false },
+      en: { stability: 0.40, similarity_boost: 0.75, style: 0.10, use_speaker_boost: false },
+      hi: { stability: 0.40, similarity_boost: 0.75, style: 0.10, use_speaker_boost: false },
+      pa: { stability: 0.35, similarity_boost: 0.65, style: 0.08, use_speaker_boost: false },
     };
 
     const r = await axios.post(

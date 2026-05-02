@@ -601,7 +601,9 @@ async function speak(text, lang) {
     const blob = await r.blob();
     const url = URL.createObjectURL(blob);
     const audio = new Audio(url);
-    audio.playbackRate = 1.0;
+    // Natural human conversation speed per language
+    const rates = { en: 0.92, hi: 1.05, pa: 0.95 };
+    audio.playbackRate = rates[resolvedLang] || 0.95;
     currentAudio = audio;
     isSpeaking = true;
     audio.play().catch(e => { console.warn('Audio play failed:', e); isSpeaking = false; });
