@@ -45,7 +45,18 @@ app.post('/api/tts', async (req, res) => {
   try {
     const { text, lang } = req.body;
 
-    // Pick correct cloned voice per language — NO primer, cloned voices are already natural
+    // Fix common mispronunciations before sending to ElevenLabs
+    const fixed = text
+      .replace(/\bVeg\b/g, 'Vej')
+      .replace(/\bveg\b/g, 'vej')
+      .replace(/\bNon-Veg\b/g, 'Non-Vej')
+      .replace(/\bnon-veg\b/g, 'non-vej')
+      .replace(/\bLassi\b/g, 'Luhsi')
+      .replace(/\blassi\b/g, 'luhsi')
+      .replace(/\bNaan\b/g, 'Naan')
+      .replace(/\bGulab Jamun\b/gi, 'Gulab Jamoon')
+      .replace(/\bBiryani\b/gi, 'Biryaani');
+
     const voiceId = VOICES[lang] || VOICES.en;
 
     console.log('TTS request | lang:', lang, '| voice:', voiceId, '| text[:40]:', text?.substring(0,40));
@@ -53,7 +64,7 @@ app.post('/api/tts', async (req, res) => {
     const r = await axios.post(
       `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
       {
-        text: text,  // No primer — cloned voices handle pronunciation naturally
+        text: fixed,  // Pronunciation-corrected text
         model_id: 'eleven_multilingual_v2',
         voice_settings: {
           stability: 0.55,          // Higher = more consistent, less robotic variance
