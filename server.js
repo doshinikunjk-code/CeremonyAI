@@ -56,9 +56,9 @@ app.post('/api/tts', async (req, res) => {
         text: text,  // No primer — cloned voices handle pronunciation naturally
         model_id: 'eleven_multilingual_v2',
         voice_settings: {
-          stability: 0.35,
-          similarity_boost: 0.90,
-          style: 0.40,
+          stability: 0.55,          // Higher = more consistent, less robotic variance
+          similarity_boost: 0.85,   // High = stays close to cloned voice
+          style: 0.20,              // Lower = more natural, less exaggerated
           use_speaker_boost: true
         }
       },
