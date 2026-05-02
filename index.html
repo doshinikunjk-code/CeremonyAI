@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Ceremony Indian Cuisine × Zivio AI</title>
-<script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web/dist/vapi.js"></script>
+<!-- Vapi loaded dynamically below -->
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&family=Noto+Sans+Gurmukhi:wght@400;600&family=Noto+Sans+Devanagari:wght@400;600&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -1208,10 +1208,14 @@ HINDI GREETING: "नमस्ते जी! Ceremony Indian Cuisine से प�
 let vapiInstance = null;
 let vapiCallActive = false;
 
-function initVapi() {
+async function initVapi() {
   if (vapiInstance) return vapiInstance;
   try {
-    vapiInstance = new Vapi(VAPI_PUBLIC_KEY);
+    // Load Vapi via ESM — only browser build that works without bundler
+    const mod = await import('https://cdn.jsdelivr.net/npm/@vapi-ai/web@2.3.5/dist/vapi.mjs');
+    const VapiClass = mod.default || mod.Vapi;
+    if (!VapiClass) throw new Error('Vapi class not found in module');
+    vapiInstance = new VapiClass(VAPI_PUBLIC_KEY);
 
     vapiInstance.on('call-start', () => {
       vapiCallActive = true;
@@ -1310,9 +1314,11 @@ async function startCallDemo() {
   document.getElementById('call-ico').textContent = '📞';
   setCS('Connecting…', 'var(--mu)');
 
-  const vapi = initVapi();
+  setCS('Loading…', 'var(--mu)');
+  const vapi = await initVapi();
   if (!vapi) {
-    setCS('Vapi unavailable', '#C03030');
+    setCS('Could not load call — check connection', '#C03030');
+    document.getElementById('call-ico').textContent = '⚠️';
     return;
   }
 
