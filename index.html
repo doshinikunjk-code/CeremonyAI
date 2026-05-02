@@ -609,7 +609,7 @@ async function speak(text, lang) {
     const url = URL.createObjectURL(blob);
     const audio = new Audio(url);
     // Natural human conversation speed per language
-    const rates = { en: 1.08, hi: 0.92, pa: 1.20 };
+    const rates = { en: 1.08, hi: 1.05, pa: 1.25 };
     audio.playbackRate = rates[resolvedLang] || 1.0;
     currentAudio = audio;
     isSpeaking = true;
@@ -620,7 +620,7 @@ async function speak(text, lang) {
         const actx = new (window.AudioContext || window.webkitAudioContext)();
         const src = actx.createMediaElementSource(audio);
         const gain = actx.createGain();
-        gain.gain.value = 3.0;  // 3x boost for Noor voice
+        gain.gain.value = 4.0;  // 4x boost for Noor voice
         src.connect(gain);
         gain.connect(actx.destination);
       } catch(ge) { console.warn('Gain node failed:', ge); }
@@ -1188,7 +1188,7 @@ ORDER RULES:
 - ACCURACY: Match dish name EXACTLY. Paneer Makhani is NOT the same as Paneer Tikka Masala. Dal Makhani is NOT Dal Tadka. Repeat back the exact name the customer said.
 - CONFIRM: After taking items say "Got it — [item], [item]. Anything else?" — no prices.
 - TOTAL: Only give total when customer says done/confirm/that's all.
-- PICKUP: 20-25 minutes.
+- PICKUP: ALWAYS say "ready in 20 to 25 minutes" — never say any other time. Never say 0 to 5 minutes. Always 20 to 25.
 
 NEVER:
 - Say you are AI
@@ -1360,7 +1360,7 @@ async function startCallDemo() {
       voice: {
         provider: 'azure',
         voiceId: callLang === 'hi' ? 'hi-IN-SwaraNeural' : callLang === 'pa' ? 'en-IN-NeerjaNeural' : 'en-IN-NeerjaNeural',
-        speed: callLang === 'pa' ? 1.15 : 1.0,
+        speed: callLang === 'hi' ? 1.05 : callLang === 'pa' ? 1.25 : 1.08,
       },
       firstMessage: firstMessages[LANG] || firstMessages.en,
       clientMessages: ['transcript', 'speech-update', 'status-update', 'metadata'],
