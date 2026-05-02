@@ -1270,9 +1270,11 @@ async function initVapi() {
     });
 
     vapiInstance.on('error', (e) => {
-      console.error('Vapi error:', e);
-      setCS('Connection issue — retrying…', '#C03030');
+      console.error('Vapi error:', JSON.stringify(e));
+      const msg = e?.error?.message || e?.message || JSON.stringify(e);
+      setCS('Error: ' + msg.substring(0, 80), '#C03030');
       document.getElementById('call-ico').textContent = '⚠️';
+      addCallLog('Error: ' + msg, 'system');
     });
 
     return vapiInstance;
