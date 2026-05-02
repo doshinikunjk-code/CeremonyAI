@@ -783,10 +783,10 @@ function setLang(lang, btn) {
   updateChips(lang);
   // Show greeting as text only — no audio (fast, no delay)
   const greets = {
-    en: 'Hello! Welcome to Ceremony Indian Cuisine. What would you like to order?',
-    pa: 'ਸਤ ਸ੍ਰੀ ਅਕਾਲ ਜੀ! Ceremony Indian Cuisine ਵਿੱਚ ਤੁਹਾਡਾ ਸੁਆਗਤ ਹੈ। ਕੀ ਚਾਹੀਦਾ ਤੁਹਾਨੂੰ?',
-    hi: 'नमस्ते जी! Ceremony Indian Cuisine में आपका स्वागत है। आज क्या लेना चाहेंगे?',
-    auto: 'Welcome to Ceremony Indian Cuisine! What would you like to order?'
+    en: 'Welcome to Ceremony! What can I get for you today?',
+    pa: 'ਸਤ ਸ੍ਰੀ ਅਕਾਲ ਜੀ! ਕੀ ਚਾਹੀਦਾ ਤੁਹਾਨੂੰ?',
+    hi: 'नमस्ते जी! आज क्या लेना चाहेंगे?',
+    auto: 'Welcome to Ceremony! What can I get for you today?'
   };
   addMsg('ai', greets[lang] || greets.auto);
 }
@@ -1165,10 +1165,10 @@ function startCallDemo() {
     document.getElementById('call-ico').textContent='🔊';
     // Greet in current language tab — default English
     const greetings = {
-      en: 'Hello! Thank you for calling Ceremony Indian Cuisine. How can I help you today?',
-      pa: 'Sat Sri Akal ji! Ceremony Indian Cuisine vich aapda swaagat hai. Ki chahida aapnu?',
-      hi: 'Namaste ji! Ceremony Indian Cuisine mein aapka swagat hai. Aaj aap kya lena chahenge?',
-      auto: 'Hello! Thank you for calling Ceremony Indian Cuisine. How can I help you today?'
+      en: 'Thank you for calling Ceremony! What can I get for you?',
+      pa: 'ਸਤ ਸ੍ਰੀ ਅਕਾਲ ਜੀ! ਕੀ ਚਾਹੀਦਾ ਤੁਹਾਨੂੰ?',
+      hi: 'नमस्ते जी! आज क्या लेना चाहेंगे?',
+      auto: 'Thank you for calling Ceremony! What can I get for you?'
     };
     const greeting = greetings[LANG] || greetings.en;
     const greetLang = (LANG === 'auto') ? 'en' : LANG;
@@ -1264,7 +1264,7 @@ window.onload = () => {
     if (mb&&mt) { mt.textContent=`Welcome back! Last order: ${recentOrder.items.map(i=>i.name).join(', ')} — say "same again" to reorder`; mb.style.display='flex'; }
     addMsg('ai', `Welcome back! 🙏 Last time you had ${recentOrder.items.map(i=>i.name.replace(/\b\w/g,c=>c.toUpperCase())).join(', ')}. Same again or something new today?`);
   } else {
-    addMsg('ai', 'Hello! Welcome to Ceremony Indian Cuisine. What would you like to order today?');
+    addMsg('ai', 'Welcome to Ceremony! What can I get for you today?');
   }
 
   document.getElementById('chat-in')?.addEventListener('keydown', e => { if (e.key==='Enter') so(); });
