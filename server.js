@@ -14,7 +14,7 @@ const EL_KEY     = process.env.EL_KEY;
 const VOICES = {
   en: process.env.EL_VOICE_EN,
   hi: process.env.EL_VOICE_HI,
-  pa: process.env.EL_VOICE_EN,    // Same cloned voice as English — consistent across all languages
+  pa: '57AfJZcOekDe9nRbKyTC',     // Original Punjabi cloned voice
 };
 
 console.log('CeremonyAI starting...');
@@ -87,7 +87,7 @@ app.post('/api/tts', async (req, res) => {
     const voiceSettings = {
       en: { stability: 0.40, similarity_boost: 0.75, style: 0.10, use_speaker_boost: false },
       hi: { stability: 0.40, similarity_boost: 0.75, style: 0.10, use_speaker_boost: false },
-      pa: { stability: 0.55, similarity_boost: 0.80, style: 0.20, use_speaker_boost: true },
+      pa: { stability: 0.40, similarity_boost: 0.80, style: 0.15, use_speaker_boost: true },
     };
 
     const r = await axios.post(

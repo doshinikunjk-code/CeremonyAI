@@ -609,7 +609,7 @@ async function speak(text, lang) {
     const url = URL.createObjectURL(blob);
     const audio = new Audio(url);
     // Natural human conversation speed per language
-    const rates = { en: 1.08, hi: 1.05, pa: 1.35 };
+    const rates = { en: 1.08, hi: 1.05, pa: 1.5 };
     audio.playbackRate = rates[resolvedLang] || 1.0;
     currentAudio = audio;
     isSpeaking = true;
@@ -1338,7 +1338,7 @@ async function startCallDemo() {
   const voiceIds = {
     en: '8P96TQQwDrf2YCUslZHJ',
     hi: 'oLi1Vmxvpqb2NRdaiA47',
-    pa: '8P96TQQwDrf2YCUslZHJ',  // Same cloned voice as English
+    pa: '57AfJZcOekDe9nRbKyTC',  // Original Punjabi cloned voice
     auto: '8P96TQQwDrf2YCUslZHJ'
   };
 
@@ -1356,7 +1356,7 @@ async function startCallDemo() {
       voice: {
         provider: 'azure',
         voiceId: callLang === 'hi' ? 'hi-IN-SwaraNeural' : callLang === 'pa' ? 'en-IN-NeerjaNeural' : 'en-IN-NeerjaNeural',
-        speed: callLang === 'hi' ? 1.05 : callLang === 'pa' ? 1.35 : 1.08,
+        speed: callLang === 'hi' ? 1.05 : callLang === 'pa' ? 1.5 : 1.08,
       },
       firstMessage: firstMessages[LANG] || firstMessages.en,
       clientMessages: ['transcript', 'speech-update', 'status-update', 'metadata'],
