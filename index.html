@@ -568,9 +568,11 @@ function toggleSpeaker() {
   if (!SPEAKER_ON && currentAudio) { currentAudio.pause(); currentAudio = null; }
 }
 
+let isSpeaking = false;
 async function speak(text, lang) {
   if (!SPEAKER_ON || !text) return;
-  // Cancel any existing audio first — prevents echo
+  if (isSpeaking) { try { currentAudio?.pause(); } catch(e){} currentAudio = null; }
+  isSpeaking = false;
   if (currentAudio) { try { currentAudio.pause(); } catch(e){} currentAudio = null; }
 
   const clean = text
@@ -598,8 +600,9 @@ async function speak(text, lang) {
     const audio = new Audio(url);
     audio.playbackRate = 1.0;
     currentAudio = audio;
-    audio.play().catch(e => console.warn('Audio play failed:', e));
-    audio.onended = () => { URL.revokeObjectURL(url); if (currentAudio === audio) currentAudio = null; };
+    isSpeaking = true;
+    audio.play().catch(e => { console.warn('Audio play failed:', e); isSpeaking = false; });
+    audio.onended = () => { URL.revokeObjectURL(url); if (currentAudio === audio) { currentAudio = null; isSpeaking = false; } };
   } catch(e) {
     console.warn('TTS failed:', e.message);
     // No browser TTS — ElevenLabs cloned voices only
@@ -817,7 +820,8 @@ ORDER COMPLETE: "[items] — total $X, ready in 20-25 mins. See you at Ceremony!
 ${MENU_STR}
 LOCATION: Mississauga, ON | HOURS: Mon-Sun 11am-11pm | HALAL: Yes`,
 
-  pa: `ਜ਼ਰੂਰੀ: ਸਿਰਫ਼ ਪੰਜਾਬੀ ਵਿੱਚ ਜਵਾਬ ਦਿਓ। ਹਰ ਜਵਾਬ ਗੁਰਮੁਖੀ ਵਿੱਚ। ਅੰਗਰੇਜ਼ੀ ਬਿਲਕੁਲ ਨਹੀਂ।
+  pa: `CRITICAL RULE: YOU MUST REPLY ONLY IN PUNJABI GURMUKHI SCRIPT. NEVER USE ENGLISH. EVEN IF CUSTOMER WRITES IN ENGLISH — REPLY IN PUNJABI GURMUKHI ONLY.
+ਜ਼ਰੂਰੀ: ਸਿਰਫ਼ ਪੰਜਾਬੀ ਵਿੱਚ ਜਵਾਬ ਦਿਓ। ਹਰ ਜਵਾਬ ਗੁਰਮੁਖੀ ਵਿੱਚ। ਅੰਗਰੇਜ਼ੀ ਬਿਲਕੁਲ ਨਹੀਂ।
 ਤੁਸੀਂ Ceremony Indian Cuisine ਦੇ ਟੀਮ ਮੈਂਬਰ ਹੋ — AI ਨਹੀਂ।
 ਟੋਨ: ਗਰਮਜੋਸ਼, ਕੁਦਰਤੀ, ਅਪਣੱਤ। ਜਿਵੇਂ ਆਪਣਾ ਕੋਈ ਬੋਲ ਰਿਹਾ ਹੋਵੇ।
 ਨਿਯਮ: ਆਰਡਰ ਲਓ, ਕੀਮਤ ਪੁੱਛਣ ਤੇ ਦੱਸੋ, ਪੱਕਾ ਕਰੋ। 1-2 ਲਾਈਨਾਂ।
@@ -826,11 +830,12 @@ LOCATION: Mississauga, ON | HOURS: Mon-Sun 11am-11pm | HALAL: Yes`,
 ${MENU_STR}
 HALAL: ਹਾਂ, ਸਾਰਾ ਮਾਸ ਹਲਾਲ ਹੈ`,
 
-  hi: `ज़रूरी: सिर्फ हिंदी में जवाब दो। हर जवाब देवनागरी में। अंग्रेजी बिल्कुल नहीं।
-तुम Ceremony Indian Cuisine के टीम मेंबर हो — AI नहीं। असली, गर्मजोशी से भरे।
-टोन: गर्मजोश, स्वाभाविक, अपनापन — जैसे कोई अपना बोल रहा हो।
+  hi: `CRITICAL RULE: YOU MUST REPLY ONLY IN HINDI DEVANAGARI SCRIPT. NEVER USE ENGLISH WORDS OR SENTENCES. EVEN IF CUSTOMER WRITES IN ENGLISH — YOUR REPLY MUST BE IN HINDI DEVANAGARI ONLY.
+ज़रूरी: सिर्फ हिंदी में जवाब दो। हर जवाब देवनागरी में। अंग्रेजी बिल्कुल नहीं।
+तुम Ceremony Indian Cuisine के टीम मेंबर हो — AI नहीं।
+टोन: गर्मजोश, स्वाभाविक, अपनापन।
 नियम: ऑर्डर लो, कीमत पूछने पर बताओ, पक्का करो। 1-2 लाइनें।
-कीमत: अगर कीमत पूछे — सही कीमत बताओ। कभी मत छोड़ो।
+कीमत: अगर कीमत पूछे — सही कीमत बताओ।
 ऑर्डर पूरा: "[items] — total $X, 20-25 मिनट में तैयार। Ceremony में मिलते हैं!"
 ${MENU_STR}
 HALAL: हाँ, सारा मांस हलाल है`
@@ -1140,20 +1145,28 @@ function toggleCallMic() {
   callRec.lang = LANG==='pa'?'pa-IN':LANG==='hi'?'hi-IN':'en-IN';
   callRec.continuous=false; callRec.interimResults=false;
   callRec.onstart=()=>{callMicOn=true;setCS('🎤 Listening…','#FF8080');btn.style.background='linear-gradient(135deg,#7A1010,#C02020)';document.getElementById('call-ico').textContent='🎤';};
+  let gotResult = false;
   callRec.onresult=e=>{
+    gotResult = true;
     const t=e.results[0][0].transcript;
     callMicOn=false;
     btn.style.background='linear-gradient(135deg,var(--saffron),var(--saffron2))';
     document.getElementById('call-ico').textContent='🔊';
+    setCS('Processing…','var(--mu)');
     handleCallSpeech(t);
   };
   callRec.onerror=e=>{
+    if (gotResult) return;
     callMicOn=false;
     btn.style.background='linear-gradient(135deg,var(--saffron),var(--saffron2))';
     console.warn('Mic error:', e.error);
-    if (e.error === 'not-allowed') { const t=prompt('Mic blocked — type your message:'); if(t) handleCallSpeech(t); }
+    const t=prompt('Could not hear — type your message:');
+    if(t) handleCallSpeech(t);
   };
-  callRec.onend=()=>{ callMicOn=false; };
+  callRec.onend=()=>{
+    callMicOn=false;
+    btn.style.background='linear-gradient(135deg,var(--saffron),var(--saffron2))';
+  };
   callRec.start();
 }
 
@@ -1177,9 +1190,16 @@ window.onload = () => {
     if (recent) {
       addMsg('ai',`Welcome back! 🙏 Last time you had ${recent.items.map(i=>i.name.replace(/\b\w/g,c=>c.toUpperCase())).join(', ')}. Same again or something new today?`);
     } else {
-      addMsg('ai','Sat Sri Akal ji! 👋 Welcome to Ceremony Indian Cuisine. What would you like to order today?');
+      // Show greeting based on active language — no auto-speak on load (avoids slow start)
+      const loadGreets = {
+        en: 'Hello! Welcome to Ceremony Indian Cuisine. What would you like to order?',
+        pa: 'ਸਤ ਸ੍ਰੀ ਅਕਾਲ ਜੀ! Ceremony Indian Cuisine ਵਿੱਚ ਤੁਹਾਡਾ ਸੁਆਗਤ ਹੈ। ਕੀ ਚਾਹੀਦਾ ਤੁਹਾਨੂੰ?',
+        hi: 'नमस्ते जी! Ceremony Indian Cuisine में आपका स्वागत है। आज क्या लेना चाहेंगे?',
+        auto: 'Hello! Welcome to Ceremony Indian Cuisine. What would you like to order today?'
+      };
+      addMsg('ai', loadGreets[LANG] || loadGreets.auto);
     }
-  },600);
+  },400);
 
   document.getElementById('chat-in')?.addEventListener('keydown', e => { if (e.key==='Enter') so(); });
   document.getElementById('call-modal')?.addEventListener('click', e => { if (e.target===document.getElementById('call-modal')) endCall(); });
