@@ -59,17 +59,20 @@ app.post('/api/tts', async (req, res) => {
 
     const voiceId = VOICES[lang] || VOICES.en;
 
-    console.log('TTS request | lang:', lang, '| voice:', voiceId, '| text[:40]:', text?.substring(0,40));
+    // Use turbo for speed (~300ms vs ~1200ms), still supports Punjabi + Hindi
+    const modelId = (lang === 'en') ? 'eleven_turbo_v2_5' : 'eleven_multilingual_v2';
+
+    console.log('TTS | lang:', lang, '| voice:', voiceId, '| model:', modelId, '| text[:50]:', fixed?.substring(0,50));
 
     const r = await axios.post(
       `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
       {
-        text: fixed,  // Pronunciation-corrected text
-        model_id: 'eleven_multilingual_v2',  // Required for Hindi/Punjabi natural pronunciation
+        text: fixed,
+        model_id: modelId,
         voice_settings: {
-          stability: 0.50,
-          similarity_boost: 0.85,
-          style: 0.15,
+          stability: lang === 'en' ? 0.50 : 0.45,        // Slightly more expressive for Indian languages
+          similarity_boost: 0.88,
+          style: lang === 'en' ? 0.15 : 0.25,            // More natural warmth for Hindi/Punjabi
           use_speaker_boost: true
         }
       },
