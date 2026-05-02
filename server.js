@@ -65,11 +65,11 @@ app.post('/api/tts', async (req, res) => {
       `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
       {
         text: fixed,  // Pronunciation-corrected text
-        model_id: 'eleven_multilingual_v2',
+        model_id: 'eleven_multilingual_v2',  // Required for Hindi/Punjabi natural pronunciation
         voice_settings: {
-          stability: 0.55,          // Higher = more consistent, less robotic variance
-          similarity_boost: 0.85,   // High = stays close to cloned voice
-          style: 0.20,              // Lower = more natural, less exaggerated
+          stability: 0.50,
+          similarity_boost: 0.85,
+          style: 0.15,
           use_speaker_boost: true
         }
       },
