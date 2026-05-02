@@ -765,23 +765,27 @@ setInterval(() => { TYPING = false; }, 15000);
 
 function setLang(lang, btn) {
   LANG = lang;
-  // Clear history when switching language so AI starts fresh in new language
   HISTORY = [];
   document.querySelectorAll('.ltab').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   const badge = document.getElementById('lang-badge');
   const labels = { auto: '🔄 Auto', en: '🇨🇦 EN', pa: '🇮🇳 PA', hi: '🇮🇳 HI' };
   if (badge) badge.textContent = labels[lang] || '🔄 Auto';
-  // Clear chat and re-greet in new language
+  // Clear chat
   const body = document.getElementById('chat-body');
   if (body) body.innerHTML = '';
+  // Update placeholder immediately
+  updatePlaceholder();
+  // Update quick chips
+  updateChips(lang);
+  // Show greeting as text only — no audio (fast, no delay)
   const greets = {
-    en: 'Hello! Welcome to Ceremony Indian Cuisine. What would you like to order today?',
+    en: 'Hello! Welcome to Ceremony Indian Cuisine. What would you like to order?',
     pa: 'ਸਤ ਸ੍ਰੀ ਅਕਾਲ ਜੀ! Ceremony Indian Cuisine ਵਿੱਚ ਤੁਹਾਡਾ ਸੁਆਗਤ ਹੈ। ਕੀ ਚਾਹੀਦਾ ਤੁਹਾਨੂੰ?',
     hi: 'नमस्ते जी! Ceremony Indian Cuisine में आपका स्वागत है। आज क्या लेना चाहेंगे?',
-    auto: 'Welcome to Ceremony Indian Cuisine! What would you like to order today?'
+    auto: 'Welcome to Ceremony Indian Cuisine! What would you like to order?'
   };
-  setTimeout(() => addMsg('ai', greets[lang] || greets.auto), 200);
+  addMsg('ai', greets[lang] || greets.auto);
 }
 
 // ── SYSTEM PROMPTS ────────────────────────────────────────────────────────────
@@ -847,6 +851,9 @@ function getPrompt() {
   if (recent && recent.items.length > 0) {
     base += `\n\nACTIVE ORDER CONTEXT: Customer ordered ${Math.round((Date.now()-recent.time)/60000)} mins ago (${recent.id}): ${recent.items.map(i=>i.name).join(', ')}. If they want to add items — acknowledge naturally and add to that order.`;
   }
+  // Hard language enforcement appended to EVERY prompt
+  if (LANG === 'hi') base += '\n\nFINAL INSTRUCTION: YOUR RESPONSE MUST BE IN HINDI DEVANAGARI SCRIPT ONLY. DO NOT USE ANY ENGLISH WORDS IN YOUR RESPONSE. RESPOND IN HINDI NOW.';
+  if (LANG === 'pa') base += '\n\nFINAL INSTRUCTION: YOUR RESPONSE MUST BE IN PUNJABI GURMUKHI SCRIPT ONLY. DO NOT USE ANY ENGLISH WORDS IN YOUR RESPONSE. RESPOND IN PUNJABI NOW.';
   return base;
 }
 
@@ -905,7 +912,6 @@ function addMsg(side, text) {
   const bubble = document.createElement('div'); bubble.className = 'bb ' + (side==='ai'?'ai-s':'usr');
   bubble.textContent = text; r.appendChild(bubble);
   if (side === 'ai') {
-    // Always detect lang from actual text script — most reliable
     const msgLang = (LANG !== 'auto') ? LANG : detectLangFromText(text);
     bubble.dataset.lang = msgLang;
     addSpeakerBtn(bubble, text, msgLang);
@@ -913,6 +919,55 @@ function addMsg(side, text) {
   b.appendChild(r); b.scrollTop = b.scrollHeight;
   requestAnimationFrame(() => r.classList.add('show'));
   return bubble;
+}
+
+// Update input placeholder based on language
+function updatePlaceholder() {
+  const inp = document.getElementById('chat-in');
+  if (!inp) return;
+  const ph = {
+    en: 'Type in English…',
+    pa: 'ਪੰਜਾਬੀ ਵਿੱਚ ਟਾਈਪ ਕਰੋ…',
+    hi: 'हिंदी में टाइप करें…',
+    auto: 'Type in English, ਪੰਜਾਬੀ, हिन्दी or mix…'
+  };
+  inp.placeholder = ph[LANG] || ph.auto;
+}
+
+// Update quick chips based on language
+function updateChips(lang) {
+  const qs = document.getElementById('quick-sugg');
+  if (!qs) return;
+  const chips = {
+    en: [
+      { label:'🍛 Butter Chicken', msg:'Butter Chicken please' },
+      { label:'🍖 Lamb Chops', msg:'Lamb Chops please' },
+      { label:'📋 Menu', msg:'What is on the menu?' },
+      { label:'💰 Prices', msg:'Can I get the prices?' },
+    ],
+    pa: [
+      { label:'🍛 ਬਟਰ ਚਿਕਨ', msg:'ਬਟਰ ਚਿਕਨ ਚਾਹੀਦਾ' },
+      { label:'🍖 ਲੈਂਬ ਚੌਪਸ', msg:'ਲੈਂਬ ਚੌਪਸ ਦੇ ਦਿਓ' },
+      { label:'📋 ਮੀਨੂ', msg:'ਮੀਨੂ ਕੀ ਹੈ?' },
+      { label:'🙏 ਸਤ ਸ੍ਰੀ ਅਕਾਲ', msg:'ਸਤ ਸ੍ਰੀ ਅਕਾਲ ਜੀ' },
+    ],
+    hi: [
+      { label:'🍛 बटर चिकन', msg:'बटर चिकन चाहिए' },
+      { label:'🍖 लैंब चॉप्स', msg:'लैंब चॉप्स दीजिए' },
+      { label:'📋 मेनू', msg:'मेनू क्या है?' },
+      { label:'🙏 नमस्ते', msg:'नमस्ते जी' },
+    ],
+    auto: [
+      { label:'🍛 Butter Chicken', msg:'Butter Chicken please' },
+      { label:'🍖 Lamb Chops', msg:'Lamb Chops chahida' },
+      { label:'📋 Menu', msg:'What is on the menu?' },
+      { label:'🙏 Sat Sri Akal', msg:'Sat Sri Akal ji' },
+    ],
+  };
+  const list = chips[lang] || chips.auto;
+  qs.innerHTML = list.map(c =>
+    `<button class="qb" onclick="qm('${c.msg}')">${c.label}</button>`
+  ).join('');
 }
 function showTyping() {
   const b = document.getElementById('chat-body');
@@ -1175,31 +1230,18 @@ window.onload = () => {
   // ElevenLabs cloned voices only — no browser TTS
   S('demo', document.querySelector('.nb.c-saffron'));
 
-  // Returning customer check
-  const recent = getRecentOrder();
-  if (recent) {
-    setTimeout(() => {
-      const mb=document.getElementById('mem-badge'), mt=document.getElementById('mem-text');
-      if (mb&&mt) { mt.textContent=`Welcome back! Last order: ${recent.items.map(i=>i.name).join(', ')} — say "same again" to reorder`; mb.style.display='flex'; }
-    },500);
-  }
+  updatePlaceholder();
+  updateChips(LANG);
 
-  // Greet
-  setTimeout(()=>{
-    const recent=getRecentOrder();
-    if (recent) {
-      addMsg('ai',`Welcome back! 🙏 Last time you had ${recent.items.map(i=>i.name.replace(/\b\w/g,c=>c.toUpperCase())).join(', ')}. Same again or something new today?`);
-    } else {
-      // Show greeting based on active language — no auto-speak on load (avoids slow start)
-      const loadGreets = {
-        en: 'Hello! Welcome to Ceremony Indian Cuisine. What would you like to order?',
-        pa: 'ਸਤ ਸ੍ਰੀ ਅਕਾਲ ਜੀ! Ceremony Indian Cuisine ਵਿੱਚ ਤੁਹਾਡਾ ਸੁਆਗਤ ਹੈ। ਕੀ ਚਾਹੀਦਾ ਤੁਹਾਨੂੰ?',
-        hi: 'नमस्ते जी! Ceremony Indian Cuisine में आपका स्वागत है। आज क्या लेना चाहेंगे?',
-        auto: 'Hello! Welcome to Ceremony Indian Cuisine. What would you like to order today?'
-      };
-      addMsg('ai', loadGreets[LANG] || loadGreets.auto);
-    }
-  },400);
+  // Instant greeting — text only, no audio on load
+  const recentOrder = getRecentOrder();
+  if (recentOrder) {
+    const mb=document.getElementById('mem-badge'), mt=document.getElementById('mem-text');
+    if (mb&&mt) { mt.textContent=`Welcome back! Last order: ${recentOrder.items.map(i=>i.name).join(', ')} — say "same again" to reorder`; mb.style.display='flex'; }
+    addMsg('ai', `Welcome back! 🙏 Last time you had ${recentOrder.items.map(i=>i.name.replace(/\b\w/g,c=>c.toUpperCase())).join(', ')}. Same again or something new today?`);
+  } else {
+    addMsg('ai', 'Hello! Welcome to Ceremony Indian Cuisine. What would you like to order today?');
+  }
 
   document.getElementById('chat-in')?.addEventListener('keydown', e => { if (e.key==='Enter') so(); });
   document.getElementById('call-modal')?.addEventListener('click', e => { if (e.target===document.getElementById('call-modal')) endCall(); });
