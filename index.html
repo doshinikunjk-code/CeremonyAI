@@ -566,39 +566,46 @@ function toggleSpeaker() {
   const btn = document.getElementById('spk-btn');
   if (btn) btn.textContent = SPEAKER_ON ? '🔊 Voice' : '🔇 Muted';
   if (!SPEAKER_ON && currentAudio) { currentAudio.pause(); currentAudio = null; }
-  if (!SPEAKER_ON && window.speechSynthesis) window.speechSynthesis.cancel();
 }
 
 async function speak(text, lang) {
   if (!SPEAKER_ON || !text) return;
+  // Cancel any existing audio first
+  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+
   const clean = text
     .replace(/[\u{1F300}-\u{1FFFF}]/gu, '')
     .replace(/[🍛🍖🥗🧀🍤🌮🍞🥘🍜☕🍮🍦🔥✅🙏😊🌟👋📢📞💬🔔✓⚡⚖️💰😔💡🛒📋📢⭐📈🗣️🧠📦✅🔄📱🖨️📊⚙️]/g, '')
     .replace(/—/g, ', ').replace(/•/g, '').replace(/\n/g, '. ').replace(/  +/g, ' ').trim();
   if (!clean) return;
-  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+
+  // Resolve lang — never pass 'auto' to server, detect from text or default to 'en'
+  let resolvedLang = lang || LANG;
+  if (resolvedLang === 'auto') {
+    // Detect from text characters
+    if (/[\u0A00-\u0A7F]/.test(clean)) resolvedLang = 'pa';      // Gurmukhi
+    else if (/[\u0900-\u097F]/.test(clean)) resolvedLang = 'hi'; // Devanagari
+    else resolvedLang = 'en';
+  }
+
   try {
     const r = await fetch('/api/tts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: clean, lang: lang || LANG })
+      body: JSON.stringify({ text: clean, lang: resolvedLang })
     });
-    if (!r.ok) throw new Error('TTS failed');
+    if (!r.ok) throw new Error('TTS ' + r.status);
     const blob = await r.blob();
     const url = URL.createObjectURL(blob);
     currentAudio = new Audio(url);
     currentAudio.playbackRate = 0.97;
-    await currentAudio.play();
-    currentAudio.onended = () => URL.revokeObjectURL(url);
+    // Use .then() not await — avoids false catch trigger causing echo
+    currentAudio.play().then(() => {}).catch(() => {});
+    currentAudio.onended = () => { URL.revokeObjectURL(url); currentAudio = null; };
   } catch(e) {
-    if (!window.speechSynthesis) return;
-    window.speechSynthesis.cancel();
-    const utt = new SpeechSynthesisUtterance(clean);
-    utt.rate = 0.92; utt.pitch = 0.95;
-    const voices = window.speechSynthesis.getVoices();
-    const v = voices.find(v => v.name === 'Lekha') || voices.find(v => v.lang === 'hi-IN') || voices.find(v => v.name === 'Samantha');
-    if (v) utt.voice = v;
-    window.speechSynthesis.speak(utt);
+    console.warn('ElevenLabs TTS failed, no fallback:', e.message);
+    // No browser TTS fallback — avoids echo. ElevenLabs only.
   }
 }
 
@@ -1084,7 +1091,7 @@ function toggleCallMic() {
 
 // ── ONLOAD ────────────────────────────────────────────────────────────────────
 window.onload = () => {
-  if (window.speechSynthesis) { window.speechSynthesis.getVoices(); window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices(); }
+  // ElevenLabs cloned voices only — no browser TTS
   S('demo', document.querySelector('.nb.c-saffron'));
 
   // Returning customer check
