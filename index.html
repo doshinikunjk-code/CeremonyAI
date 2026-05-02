@@ -1271,10 +1271,11 @@ async function initVapi() {
 
     vapiInstance.on('error', (e) => {
       console.error('Vapi error:', JSON.stringify(e));
-      const msg = e?.error?.message || e?.message || JSON.stringify(e);
-      setCS('Error: ' + msg.substring(0, 80), '#C03030');
+      const msg = e?.error?.message?.[0] || e?.error?.message || e?.message || 'Unknown error';
+      const display = typeof msg === 'string' ? msg.substring(0, 80) : JSON.stringify(msg).substring(0, 80);
+      setCS('Error: ' + display, '#C03030');
       document.getElementById('call-ico').textContent = '⚠️';
-      addCallLog('Error: ' + msg, 'system');
+      addCallLog('Error: ' + display, 'system');
     });
 
     return vapiInstance;
@@ -1351,21 +1352,21 @@ async function startCallDemo() {
     await vapi.start({
       model: {
         provider: 'anthropic',
-        model: 'claude-haiku-20240307',
+        model: 'claude-haiku-4-5-20251001',
         messages: [{ role: 'system', content: VAPI_SYSTEM }],
         temperature: 0.7,
         maxTokens: 150,
       },
       voice: {
         provider: 'azure',
-        voiceId: callLang === 'pa' ? 'en-IN-NeerjaNeural' : callLang === 'hi' ? 'hi-IN-SwaraNeural' : 'en-IN-NeerjaNeural',
+        voiceId: callLang === 'hi' ? 'hi-IN-SwaraNeural' : 'en-IN-NeerjaNeural',
       },
       firstMessage: firstMessages[LANG] || firstMessages.en,
-      clientMessages: ['transcript', 'speech-update', 'volume-level'],
+      clientMessages: ['transcript', 'speech-update', 'status-update', 'metadata'],
       transcriber: {
         provider: 'deepgram',
         model: 'nova-2',
-        language: callLang === 'pa' ? 'hi' : callLang === 'hi' ? 'hi' : 'en-IN',
+        language: callLang === 'hi' ? 'hi' : 'en-IN',
       },
     });
   } catch(e) {
