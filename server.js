@@ -9,14 +9,12 @@ app.use(express.static(path.join(__dirname)));
 const CLAUDE_KEY = process.env.CLAUDE_KEY;
 const EL_KEY     = process.env.EL_KEY;
 
-// Cloned voice IDs — no accent, natural Indian speech
 const VOICES = {
   en: process.env.EL_VOICE_EN,
   hi: process.env.EL_VOICE_HI,
   pa: process.env.EL_VOICE_PA,
 };
 
-// Startup check
 console.log('CeremonyAI starting...');
 console.log('Claude key:', CLAUDE_KEY ? '✅ set' : '❌ MISSING');
 console.log('EL key:', EL_KEY ? '✅ set' : '❌ MISSING');
@@ -24,7 +22,7 @@ console.log('Voices EN/HI/PA:', VOICES.en ? '✅' : '❌', VOICES.hi ? '✅' : '
 
 // ── Claude ──────────────────────────────────────────────────────────────────
 app.post('/api/claude', async (req, res) => {
-  if (!CLAUDE_KEY) return res.status(500).json({ error: 'CLAUDE_KEY not set in environment' });
+  if (!CLAUDE_KEY) return res.status(500).json({ error: 'CLAUDE_KEY not set' });
   try {
     const r = await axios.post('https://api.anthropic.com/v1/messages', req.body, {
       headers: {
@@ -34,27 +32,28 @@ app.post('/api/claude', async (req, res) => {
       },
       timeout: 30000
     });
-    console.log('Claude OK:', r.status);
     res.json(r.data);
   } catch(e) {
-    console.error('Claude error:', e.response?.status, e.response?.data || e.message);
+    console.error('Claude error:', e.response?.status, e.message);
     res.status(500).json({ error: e.message });
   }
 });
 
-// ── ElevenLabs TTS — language-specific cloned voices ────────────────────────
+// ── ElevenLabs TTS ──────────────────────────────────────────────────────────
 app.post('/api/tts', async (req, res) => {
-  if (!EL_KEY) return res.status(500).json({ error: 'EL_KEY not set in environment' });
+  if (!EL_KEY) return res.status(500).json({ error: 'EL_KEY not set' });
   try {
     const { text, lang } = req.body;
 
+    // Pick correct cloned voice per language — NO primer, cloned voices are already natural
     const voiceId = VOICES[lang] || VOICES.en;
-    const primedText = lang === 'hi' ? text : 'जी। ' + text;
+
+    console.log('TTS request | lang:', lang, '| voice:', voiceId, '| text[:40]:', text?.substring(0,40));
 
     const r = await axios.post(
       `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
       {
-        text: primedText,
+        text: text,  // No primer — cloned voices handle pronunciation naturally
         model_id: 'eleven_multilingual_v2',
         voice_settings: {
           stability: 0.35,
@@ -75,9 +74,10 @@ app.post('/api/tts', async (req, res) => {
     );
     console.log('EL OK:', r.status, '| lang:', lang, '| voice:', voiceId);
     res.setHeader('Content-Type', 'audio/mpeg');
+    res.setHeader('Cache-Control', 'no-cache');
     res.send(Buffer.from(r.data));
   } catch(e) {
-    console.error('EL error:', e.response?.status, e.response?.data?.toString()?.substring(0, 200) || e.message);
+    console.error('EL error:', e.response?.status, e.message);
     res.status(500).json({ error: e.message });
   }
 });
