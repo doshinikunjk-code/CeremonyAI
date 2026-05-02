@@ -1325,9 +1325,7 @@ async function startCallDemo() {
   }
 
   // Simulate dialling UX
-  setCS('Dialling (905) 123-4567…', 'var(--mu)');
-  await new Promise(r => setTimeout(r, 200));
-  setCS('🔔 Ringing…', 'var(--saffron)');
+  setCS('🔔 Connecting…', 'var(--saffron)');
   document.getElementById('call-ico').textContent = '📳';
 
   // Determine first message based on language tab
@@ -1342,7 +1340,7 @@ async function startCallDemo() {
   const voiceIds = {
     en: '8P96TQQwDrf2YCUslZHJ',
     hi: 'oLi1Vmxvpqb2NRdaiA47',
-    pa: 'vT0wMbLG5dssaBsksrb6',
+    pa: '8P96TQQwDrf2YCUslZHJ',  // Same cloned voice as English
     auto: '8P96TQQwDrf2YCUslZHJ'
   };
 

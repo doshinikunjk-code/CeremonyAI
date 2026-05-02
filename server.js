@@ -14,7 +14,7 @@ const EL_KEY     = process.env.EL_KEY;
 const VOICES = {
   en: process.env.EL_VOICE_EN,
   hi: process.env.EL_VOICE_HI,
-  pa: 'vT0wMbLG5dssaBsksrb6',    // Noor — Punjabi female, Doaba accent, natural clarity
+  pa: process.env.EL_VOICE_EN,    // Same cloned voice as English — consistent across all languages
 };
 
 console.log('CeremonyAI starting...');
