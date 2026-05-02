@@ -295,7 +295,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--cream);mi
 
       <div class="cb" id="chat-body"></div>
 
-      <div class="qs">
+      <div class="qs" id="quick-sugg">
         <button class="qb" onclick="qm('Butter Chicken please')">🍛 Butter Chicken</button>
         <button class="qb" onclick="qm('Lamb Chops chahida')">🍖 Lamb Chops</button>
         <button class="qb" onclick="qm('What is on the menu?')">📋 Menu</button>
@@ -571,9 +571,12 @@ function toggleSpeaker() {
 let isSpeaking = false;
 async function speak(text, lang) {
   if (!SPEAKER_ON || !text) return;
-  if (isSpeaking) { try { currentAudio?.pause(); } catch(e){} currentAudio = null; }
+  // Hard stop any existing audio before starting new one
   isSpeaking = false;
-  if (currentAudio) { try { currentAudio.pause(); } catch(e){} currentAudio = null; }
+  if (currentAudio) {
+    try { currentAudio.pause(); currentAudio.src = ''; } catch(e){}
+    currentAudio = null;
+  }
 
   const clean = text
     .replace(/[\u{1F300}-\u{1FFFF}]/gu, '')
@@ -858,26 +861,47 @@ function getPrompt() {
 }
 
 // ── OFFLINE FALLBACK ──────────────────────────────────────────────────────────
-const OFFLINE = [
-  { m:['butter chicken','bc'],              r:'Butter Chicken — $18, noted! Anything else?' },
-  { m:['lamb chops','lamb'],                r:'Lamb Chops — $24, added! Anything else?' },
-  { m:['garlic naan','naan'],               r:'Garlic Naan — $4, done! Anything else?' },
-  { m:['lassi','mango lassi'],              r:'Mango Lassi — $4, added!' },
-  { m:['dal makhani','dal'],                r:'Dal Makhani — $14, noted! Anything else?' },
-  { m:['palak paneer','palak'],             r:'Palak Paneer — $16, added!' },
-  { m:['price','how much','kitna','cost'],  r:'Happy to help with prices! Which dish are you asking about?' },
-  { m:['menu','kya hai'],                   r:'We have Veg & Non-Veg Appetizers, Chinese Corner, Curries, Breads, Rice, Drinks, Desserts, and full Bar. What would you like?' },
-  { m:['halal','halaal'],                   r:'Yes, all our meat is 100% halal!' },
-  { m:['hour','open','timing','close'],     r:'We are open Mon-Sun 11am to 11pm.' },
-  { m:['confirm','pakka','done','theek','yes','haan'],r:'Order confirmed! Ready in 20-25 mins. See you at Ceremony! 🙏' },
-  { m:['sat sri akal','satsriakal'],        r:'Sat Sri Akal ji! Welcome to Ceremony. What would you like to order?' },
-  { m:['namaste','namaskar'],               r:'Namaste ji! Welcome to Ceremony Indian Cuisine. What would you like?' },
-  { m:['hi','hello','hey'],                 r:'Welcome to Ceremony Indian Cuisine! What would you like to order today?' },
-];
+const OFFLINE = {
+  en: [
+    { m:['butter chicken','bc'],             r:'Butter Chicken — $18, noted! Anything else?' },
+    { m:['lamb chops','lamb'],               r:'Lamb Chops — $24, added! Anything else?' },
+    { m:['garlic naan','naan'],              r:'Garlic Naan — $4, done! Anything else?' },
+    { m:['lassi','mango lassi'],             r:'Mango Lassi — $4, added!' },
+    { m:['menu','kya hai'],                  r:'We have Veg & Non-Veg Appetizers, Chinese Corner, Curries, Breads, Rice, Drinks, Desserts, and full Bar. What would you like?' },
+    { m:['halal'],                           r:'Yes, all our meat is 100% halal!' },
+    { m:['hi','hello','hey'],                r:'Welcome to Ceremony Indian Cuisine! What would you like to order?' },
+  ],
+  pa: [
+    { m:['butter chicken','bc','ਬਟਰ'],       r:'ਬਟਰ ਚਿਕਨ — $18, ਨੋਟ ਕਰ ਲਿਆ! ਹੋਰ ਕੁਝ ਚਾਹੀਦਾ?' },
+    { m:['lamb','ਲੈਂਬ'],                      r:'ਲੈਂਬ ਚੌਪਸ — $24, ਨੋਟ ਕਰ ਲਿਆ! ਹੋਰ ਕੁਝ?' },
+    { m:['naan','ਨਾਨ'],                       r:'ਗਾਰਲਿਕ ਨਾਨ — $4, ਹੋ ਗਿਆ! ਹੋਰ?' },
+    { m:['lassi','ਲੱਸੀ'],                     r:'ਮੈਂਗੋ ਲੱਸੀ — $4, ਨੋਟ ਕਰ ਲਿਆ!' },
+    { m:['menu','ਮੀਨੂ','kya hai'],            r:'ਸਾਡੇ ਕੋਲ ਵੈੱਜ ਅਤੇ ਨੌਨ-ਵੈੱਜ ਐਪੇਟਾਈਜ਼ਰ, ਚਾਈਨੀਜ਼, ਕਰੀਆਂ, ਬ੍ਰੈੱਡ, ਰਾਈਸ, ਡ੍ਰਿੰਕਸ, ਅਤੇ ਡੈਜ਼ਰਟ ਹਨ। ਕੀ ਚਾਹੀਦਾ?' },
+    { m:['halal','ਹਲਾਲ'],                    r:'ਹਾਂ ਜੀ, ਸਾਰਾ ਮਾਸ ਹਲਾਲ ਹੈ!' },
+    { m:['sat sri akal','ਸਤ ਸ੍ਰੀ'],          r:'ਸਤ ਸ੍ਰੀ ਅਕਾਲ ਜੀ! Ceremony ਵਿੱਚ ਆਪਦਾ ਸੁਆਗਤ ਹੈ। ਕੀ ਚਾਹੀਦਾ ਤੁਹਾਨੂੰ?' },
+  ],
+  hi: [
+    { m:['butter chicken','bc','बटर'],        r:'बटर चिकन — $18, नोट कर लिया! और कुछ चाहिए?' },
+    { m:['lamb','लैंब'],                       r:'लैंब चॉप्स — $24, नोट कर लिया! और?' },
+    { m:['naan','नान'],                        r:'गार्लिक नान — $4, हो गया! और?' },
+    { m:['lassi','लस्सी'],                     r:'मैंगो लस्सी — $4, नोट कर लिया!' },
+    { m:['menu','मेनू','kya hai'],             r:'हमारे पास वेज और नॉन-वेज एपेटाइजर, चाइनीज, करी, ब्रेड, राइस, ड्रिंक्स और डेजर्ट हैं। क्या लेना चाहेंगे?' },
+    { m:['halal','हलाल'],                      r:'हाँ जी, सारा मांस हलाल है!' },
+    { m:['namaste','नमस्ते'],                  r:'नमस्ते जी! Ceremony में आपका स्वागत है। आज क्या लेना चाहेंगे?' },
+  ],
+};
 function getOffline(text) {
   const l = (text||'').toLowerCase();
-  for (const o of OFFLINE) { if (o.m.some(m => l.includes(m))) return o.r; }
-  return 'Welcome to Ceremony! What would you like to order today?';
+  const lang = LANG === 'auto' ? detectLangFromText(text) : LANG;
+  const list = OFFLINE[lang] || OFFLINE.en;
+  for (const o of list) { if (o.m.some(m => l.includes(m))) return o.r; }
+  // Default by language
+  const defaults = {
+    pa: 'Ceremony ਵਿੱਚ ਤੁਹਾਡਾ ਸੁਆਗਤ ਹੈ! ਕੀ ਚਾਹੀਦਾ ਤੁਹਾਨੂੰ?',
+    hi: 'Ceremony में आपका स्वागत है! आज क्या लेना चाहेंगे?',
+    en: 'Welcome to Ceremony! What would you like to order today?',
+  };
+  return defaults[lang] || defaults.en;
 }
 
 // ── TYPING SOUND ──────────────────────────────────────────────────────────────
@@ -988,7 +1012,7 @@ async function callClaude(messages) {
       const res = await fetch('/api/claude', {
         method: 'POST', signal: ctrl.signal,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 180, system: getPrompt(), messages })
+        body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 300, system: getPrompt(), messages })
       });
       clearTimeout(t);
       if (!res.ok) { if (attempt===3) throw new Error('HTTP '+res.status); await new Promise(r=>setTimeout(r,600*attempt)); continue; }
@@ -1245,6 +1269,18 @@ window.onload = () => {
 
   document.getElementById('chat-in')?.addEventListener('keydown', e => { if (e.key==='Enter') so(); });
   document.getElementById('call-modal')?.addEventListener('click', e => { if (e.target===document.getElementById('call-modal')) endCall(); });
+
+  // Pre-warm ElevenLabs connection — reduces first-speak latency from ~3s to ~0.8s
+  setTimeout(() => {
+    fetch('/api/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: 'ਜੀ', lang: 'pa' })
+    }).then(r => r.blob()).then(b => {
+      // Discard — just warming the connection
+      console.log('ElevenLabs pre-warmed ✅');
+    }).catch(() => {});
+  }, 1500);
 };
 </script>
 </body>
