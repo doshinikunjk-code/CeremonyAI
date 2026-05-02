@@ -45,27 +45,29 @@ app.post('/api/tts', async (req, res) => {
   try {
     const { text, lang } = req.body;
 
-    // Fix common mispronunciations before sending to ElevenLabs
-    let fixed = text
-      .replace(/\bVeg\b/g, 'Vej')
-      .replace(/\bveg\b/g, 'vej')
-      .replace(/\bNon-Veg\b/g, 'Non-Vej')
-      .replace(/\bnon-veg\b/g, 'non-vej')
-      .replace(/\bLassi\b/g, 'Luhsi')
-      .replace(/\blassi\b/g, 'luhsi')
-      .replace(/\bNaan\b/g, 'Naan')
-      .replace(/\bGulab Jamun\b/gi, 'Gulab Jamoon')
-      .replace(/\bBiryani\b/gi, 'Biryaani');
+    // Fix mispronunciations — only for Latin script (not Hindi/Punjabi Devanagari/Gurmukhi)
+    const isIndianScript = /[\u0900-\u097F\u0A00-\u0A7F]/.test(text);
+    let fixed = text;
 
-    // Punjabi-specific: soften Ceremony name pronunciation + common food words
+    if (!isIndianScript) {
+      fixed = fixed
+        .replace(/\bVeg\b/g, 'Vej')
+        .replace(/\bveg\b/g, 'vej')
+        .replace(/\bNon-Veg\b/g, 'Non-Vej')
+        .replace(/\bnon-veg\b/g, 'non-vej')
+        .replace(/\bLassi\b/g, 'Luhsi')
+        .replace(/\blassi\b/g, 'luhsi')
+        .replace(/\bGulab Jamun\b/gi, 'Gulab Jamoon')
+        .replace(/\bBiryani\b/gi, 'Biryaani');
+    }
+
+    // Punjabi-specific text fixes
     if (lang === 'pa') {
       fixed = fixed
-        .replace(/Ceremony/g, 'Seremoni')           // Softer C sound
-        .replace(/ਚਾਹੀਦਾ/g, 'ਚਾਹੀਦਾ')              // Keep natural
-        .replace(/ਕੀ ਚਾਹੀਦਾ/g, 'ਕੀ ਚਾਹੀਦਾ')        // Keep natural  
-        .replace(/\$(\d+)/g, '$1 ਡਾਲਰ')            // "$18" → "18 ਡਾਲਰ" — more natural Punjabi
-        .replace(/total/gi, 'ਕੁੱਲ')                  // "total" → Punjabi word
-        .replace(/order/gi, 'ਆਰਡਰ');
+        .replace(/Ceremony/g, 'Seremoni')
+        .replace(/\$(\d+)/g, '$1 ਡਾਲਰ')
+        .replace(/\btotal\b/gi, 'ਕੁੱਲ')
+        .replace(/\border\b/gi, 'ਆਰਡਰ');
     }
 
     const voiceId = VOICES[lang] || VOICES.en;

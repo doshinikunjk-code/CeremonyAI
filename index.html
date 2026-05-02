@@ -537,7 +537,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--cream);mi
       <button id="call-mic-btn" onclick="toggleCallMic()" style="width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--saffron),var(--saffron2));border:none;font-size:19px;cursor:pointer">🎤</button>
       <button onclick="endCall()" style="width:42px;height:42px;border-radius:50%;background:#5A1010;border:none;font-size:16px;cursor:pointer;align-self:center">📵</button>
     </div>
-    <div style="font-size:10px;color:var(--mu);margin-top:12px">Tap 🎤 to speak · 📵 to end</div>
+    <div id="call-type-row" style="display:flex;gap:8px;margin-top:12px;width:100%">
+      <input id="call-type-in" placeholder="Type your order here…" style="flex:1;background:#151210;border:1px solid #3A2F1E;border-radius:20px;padding:8px 14px;font-size:12px;color:#F2E8D5;font-family:inherit;outline:none">
+      <button onclick="submitCallType()" style="padding:8px 14px;border-radius:20px;background:linear-gradient(135deg,#E8860A,#F5A832);border:none;color:#000;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">Send</button>
+    </div>
+    <div style="font-size:10px;color:var(--mu);margin-top:6px">🎤 Tap mic to speak OR type above</div>
   </div>
 </div>
 
@@ -604,10 +608,21 @@ async function speak(text, lang) {
     // Tuned per language — human conversation pace
     const rates = { en: 1.08, hi: 0.92, pa: 1.05 };
     audio.playbackRate = rates[resolvedLang] || 1.0;
-    // Punjabi volume boost — Noor is a quieter voice
-    audio.volume = resolvedLang === 'pa' ? 1.5 : 1.0;
     currentAudio = audio;
     isSpeaking = true;
+
+    // Punjabi volume boost via Web Audio API gain node (browser max volume = 1.0, gain goes higher)
+    if (resolvedLang === 'pa') {
+      try {
+        const actx = new (window.AudioContext || window.webkitAudioContext)();
+        const src = actx.createMediaElementSource(audio);
+        const gain = actx.createGain();
+        gain.gain.value = 2.2;  // Boost Punjabi/Noor voice 2.2x
+        src.connect(gain);
+        gain.connect(actx.destination);
+      } catch(ge) { console.warn('Gain node failed:', ge); }
+    }
+
     audio.play().catch(e => { console.warn('Audio play failed:', e); isSpeaking = false; });
     audio.onended = () => { URL.revokeObjectURL(url); if (currentAudio === audio) { currentAudio = null; isSpeaking = false; } };
   } catch(e) {
@@ -1177,6 +1192,11 @@ function startCallDemo() {
     const greeting = greetings[LANG] || greetings.en;
     const greetLang = (LANG === 'auto') ? 'en' : LANG;
     callSpeak(greeting, greetLang);
+    // Enable Enter key on type input
+    setTimeout(() => {
+      const ti = document.getElementById('call-type-in');
+      if (ti) ti.addEventListener('keydown', e => { if (e.key === 'Enter') submitCallType(); });
+    }, 100);
   },3200);
 }
 function endCall() { callActive=false; callMicOn=false; try{callRec?.stop()}catch(e){} if(currentAudio){currentAudio.pause();currentAudio=null;} document.getElementById('call-modal').style.display='none'; }
@@ -1217,6 +1237,14 @@ async function handleCallSpeech(text) {
     }
   } catch(e) { setCS('Connection issue','#C03030'); }
 }
+function submitCallType() {
+  const inp = document.getElementById('call-type-in');
+  const text = inp?.value.trim();
+  if (!text || !callActive) return;
+  inp.value = '';
+  handleCallSpeech(text);
+}
+
 function toggleCallMic() {
   if (!callActive) return;
   const btn=document.getElementById('call-mic-btn');
