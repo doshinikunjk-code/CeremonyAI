@@ -12,9 +12,9 @@ const CLAUDE_KEY = process.env.CLAUDE_KEY;
 const EL_KEY     = process.env.EL_KEY;
 
 const VOICES = {
-  en: process.env.EL_VOICE_EN,
-  hi: process.env.EL_VOICE_HI,
-  pa: '57AfJZcOekDe9nRbKyTC',     // Original Punjabi cloned voice
+  en: 'vIuQAVgtG4JInjDdhmmH',    // Same voice for all languages
+  hi: 'vIuQAVgtG4JInjDdhmmH',    // New Hindi community voice — natural human
+  pa: 'vIuQAVgtG4JInjDdhmmH',    // Same voice for all languages
 };
 
 console.log('CeremonyAI starting...');

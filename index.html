@@ -609,7 +609,7 @@ async function speak(text, lang) {
     const url = URL.createObjectURL(blob);
     const audio = new Audio(url);
     // Natural human conversation speed per language
-    const rates = { en: 1.08, hi: 1.05, pa: 1.5 };
+    const rates = { en: 1.0, hi: 0.98, pa: 1.0 };
     audio.playbackRate = rates[resolvedLang] || 1.0;
     currentAudio = audio;
     isSpeaking = true;
@@ -1186,12 +1186,17 @@ HOW TO TAKE AN ORDER:
 1. Listen to everything the customer says before responding.
 2. When they pause or finish — confirm ALL items together in ONE sentence: "Perfect, [item], [item] and [item] — anything else?"
 3. Never say "Got it" more than once. Never repeat the same phrase twice.
-4. When they say they are done — give the total and say "Ready in 20 to 25 minutes!"
-5. End warmly: "See you soon!"
+4. When they say they are done — give the total ONLY IF THEY ASK, otherwise just say "Ready in 20 to 25 minutes!"
+5. End EVERY call warmly: "Thank you so much for calling Ceremony — we look forward to seeing you! Have a wonderful day!"
+
+PRICE RULES — CRITICAL:
+- NEVER mention any price at any point unless the customer directly asks "how much", "what is the price", "kitna", "keemat", "price kya hai"
+- Do NOT say the total unless asked
+- Do NOT confirm order with prices
+- If you accidentally say a price — do not repeat it
 
 STRICT RULES:
 - ONE response per turn — never send multiple messages
-- NEVER mention price unless asked directly
 - NEVER say "Got it. Got it." or repeat any phrase
 - Match dish names EXACTLY — Paneer Makhani ≠ Paneer Tikka Masala
 - Pickup time is ALWAYS 20 to 25 minutes — never any other time
@@ -1336,10 +1341,10 @@ async function startCallDemo() {
 
   // Voice IDs per language
   const voiceIds = {
-    en: '8P96TQQwDrf2YCUslZHJ',
-    hi: 'oLi1Vmxvpqb2NRdaiA47',
-    pa: '57AfJZcOekDe9nRbKyTC',  // Original Punjabi cloned voice
-    auto: '8P96TQQwDrf2YCUslZHJ'
+    en: 'vIuQAVgtG4JInjDdhmmH',  // Same voice for all languages
+    hi: 'vIuQAVgtG4JInjDdhmmH',  // New Hindi community voice — natural human
+    pa: 'vIuQAVgtG4JInjDdhmmH',  // Same voice for all languages
+    auto: 'vIuQAVgtG4JInjDdhmmH'
   };
 
   const callLang = (LANG === 'auto') ? 'en' : LANG;
@@ -1356,7 +1361,7 @@ async function startCallDemo() {
       voice: {
         provider: 'azure',
         voiceId: callLang === 'hi' ? 'hi-IN-SwaraNeural' : callLang === 'pa' ? 'en-IN-NeerjaNeural' : 'en-IN-NeerjaNeural',
-        speed: callLang === 'hi' ? 1.05 : callLang === 'pa' ? 1.5 : 1.08,
+        speed: 1.0,
       },
       firstMessage: firstMessages[LANG] || firstMessages.en,
       clientMessages: ['transcript', 'speech-update', 'status-update', 'metadata'],
