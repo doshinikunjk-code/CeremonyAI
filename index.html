@@ -608,19 +608,19 @@ async function speak(text, lang) {
     const blob = await r.blob();
     const url = URL.createObjectURL(blob);
     const audio = new Audio(url);
-    // Tuned per language — human conversation pace
-    const rates = { en: 1.08, hi: 0.92, pa: 1.05 };
+    // Natural human conversation speed per language
+    const rates = { en: 1.08, hi: 0.92, pa: 1.20 };
     audio.playbackRate = rates[resolvedLang] || 1.0;
     currentAudio = audio;
     isSpeaking = true;
 
-    // Punjabi volume boost via Web Audio API gain node (browser max volume = 1.0, gain goes higher)
+    // Punjabi volume boost via Web Audio API gain node
     if (resolvedLang === 'pa') {
       try {
         const actx = new (window.AudioContext || window.webkitAudioContext)();
         const src = actx.createMediaElementSource(audio);
         const gain = actx.createGain();
-        gain.gain.value = 2.2;  // Boost Punjabi/Noor voice 2.2x
+        gain.gain.value = 3.0;  // 3x boost for Noor voice
         src.connect(gain);
         gain.connect(actx.destination);
       } catch(ge) { console.warn('Gain node failed:', ge); }
@@ -1326,7 +1326,7 @@ async function startCallDemo() {
 
   // Simulate dialling UX
   setCS('Dialling (905) 123-4567…', 'var(--mu)');
-  await new Promise(r => setTimeout(r, 1000));
+  await new Promise(r => setTimeout(r, 400));
   setCS('🔔 Ringing…', 'var(--saffron)');
   document.getElementById('call-ico').textContent = '📳';
 
@@ -1359,7 +1359,8 @@ async function startCallDemo() {
       },
       voice: {
         provider: 'azure',
-        voiceId: callLang === 'hi' ? 'hi-IN-SwaraNeural' : 'en-IN-NeerjaNeural',
+        voiceId: callLang === 'hi' ? 'hi-IN-SwaraNeural' : callLang === 'pa' ? 'en-IN-NeerjaNeural' : 'en-IN-NeerjaNeural',
+        speed: callLang === 'pa' ? 1.15 : 1.0,
       },
       firstMessage: firstMessages[LANG] || firstMessages.en,
       clientMessages: ['transcript', 'speech-update', 'status-update', 'metadata'],
@@ -1367,7 +1368,13 @@ async function startCallDemo() {
         provider: 'deepgram',
         model: 'nova-2',
         language: callLang === 'hi' ? 'hi' : 'en-IN',
+        smartFormat: true,
       },
+      backgroundDenoisingEnabled: true,
+      silenceTimeoutSeconds: 20,
+      responseDelaySeconds: 0,
+      llmRequestDelaySeconds: 0,
+      numWordsToInterruptAssistant: 2,
     });
   } catch(e) {
     console.error('Vapi start error:', e);

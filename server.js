@@ -87,7 +87,7 @@ app.post('/api/tts', async (req, res) => {
     const voiceSettings = {
       en: { stability: 0.40, similarity_boost: 0.75, style: 0.10, use_speaker_boost: false },
       hi: { stability: 0.40, similarity_boost: 0.75, style: 0.10, use_speaker_boost: false },
-      pa: { stability: 0.45, similarity_boost: 0.72, style: 0.12, use_speaker_boost: true },
+      pa: { stability: 0.55, similarity_boost: 0.80, style: 0.20, use_speaker_boost: true },
     };
 
     const r = await axios.post(
