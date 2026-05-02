@@ -609,7 +609,7 @@ async function speak(text, lang) {
     const url = URL.createObjectURL(blob);
     const audio = new Audio(url);
     // Natural human conversation speed per language
-    const rates = { en: 1.08, hi: 1.05, pa: 1.25 };
+    const rates = { en: 1.08, hi: 1.05, pa: 1.35 };
     audio.playbackRate = rates[resolvedLang] || 1.0;
     currentAudio = audio;
     isSpeaking = true;
@@ -1176,12 +1176,12 @@ DESSERTS: Gulab Jamun $5, Rasmalai $5, Malai Kulfi $15, Kulfi Falooda $10, Gajar
 PLATTERS: Non-Veg Platter $26.99, Veg Platter $23.99
 BAR: Beer $5-6, Wine $7/glass, Whiskey $6-9, Vodka $5-9, Cocktails $12, Mocktails $8`;
 
-const VAPI_SYSTEM = `You are Priya, the voice assistant for Ceremony Indian Cuisine, Mississauga, Ontario. You are NOT an AI — you are a warm, real team member.
+const VAPI_SYSTEM = `You are Priya, the voice assistant for Ceremony Indian Cuisine, Mississauga, Ontario. You are NOT an AI — you are a warm, real team member. Your name is Ria.
 
 LANGUAGE RULE — CRITICAL:
 Detect language from caller's FIRST sentence. Punjabi → reply ONLY Punjabi whole call. Hindi → reply ONLY Hindi. English → reply ONLY English. Never switch unless caller does.
 
-TONE: Warm, natural, brief. 1-2 short sentences per turn. Never read long lists. Sound like a real local person.
+TONE: You ARE in the restaurant right now. Speak like you are standing at the counter — warm, quick, real. Never formal. Never robotic. Short sentences. Like talking to a neighbour. If they pause — wait. If they order — confirm simply and move on.
 
 ORDER RULES:
 - PRICE: NEVER mention price unless the customer explicitly asks "how much" or "what is the price" or "kitna" or "keemat". Just confirm the item name only.
@@ -1201,9 +1201,7 @@ Hours: Mon-Sun 11am-11pm | Halal: Yes 100% | Bar: Full bar | Location: Mississau
 
 ${CEREMONY_MENU}
 
-ENGLISH GREETING: "Thank you for calling Ceremony! This is Priya, what can I get for you?"
-PUNJABI GREETING: "ਸਤ ਸ੍ਰੀ ਅਕਾਲ ਜੀ! Ceremony ਤੋਂ ਪ੍ਰਿਆ ਬੋਲ ਰਹੀ ਹਾਂ। ਦੱਸੋ, ਕੀ ਲੈਣਾ ਹੈ?"
-HINDI GREETING: "नमस्ते जी! Ceremony से प्रिया बोल रही हूं। बताइए, क्या लेना है?"`;
+NOTE: The greeting has already been said. Jump straight into taking the order. Do NOT greet again.`;
 
 let vapiInstance = null;
 let vapiCallActive = false;
@@ -1330,10 +1328,10 @@ async function startCallDemo() {
 
   // Determine first message based on language tab
   const firstMessages = {
-    en: 'Thank you for calling Ceremony Indian Cuisine! This is Priya, how can I help you today?',
-    pa: 'ਸਤ ਸ੍ਰੀ ਅਕਾਲ ਜੀ! Ceremony Indian Cuisine ਤੋਂ ਪ੍ਰਿਆ ਬੋਲ ਰਹੀ ਹਾਂ। ਦੱਸੋ ਜੀ, ਕੀ ਚਾਹੀਦਾ?',
-    hi: 'नमस्ते जी! Ceremony Indian Cuisine से प्रिया बोल रही हूं। बताइए, आज क्या लेना चाहेंगे?',
-    auto: 'Thank you for calling Ceremony Indian Cuisine! This is Priya, how can I help you today?'
+    en: 'Hi, this is Ria from Ceremony Indian Cuisine — how can I help you?',
+    pa: 'ਹੈਲੋ, ਮੈਂ Ceremony Indian Cuisine ਤੋਂ ਰਿਆ ਬੋਲ ਰਹੀ ਹਾਂ — ਦੱਸੋ ਜੀ, ਕਿਵੇਂ ਮਦਦ ਕਰਾਂ?',
+    hi: 'हेलो, मैं Ceremony Indian Cuisine से रिया बोल रही हूं — बताइए, कैसे मदद करूं?',
+    auto: 'Hi, this is Ria from Ceremony Indian Cuisine — how can I help you?'
   };
 
   // Voice IDs per language
@@ -1358,7 +1356,7 @@ async function startCallDemo() {
       voice: {
         provider: 'azure',
         voiceId: callLang === 'hi' ? 'hi-IN-SwaraNeural' : callLang === 'pa' ? 'en-IN-NeerjaNeural' : 'en-IN-NeerjaNeural',
-        speed: callLang === 'hi' ? 1.05 : callLang === 'pa' ? 1.25 : 1.08,
+        speed: callLang === 'hi' ? 1.05 : callLang === 'pa' ? 1.35 : 1.08,
       },
       firstMessage: firstMessages[LANG] || firstMessages.en,
       clientMessages: ['transcript', 'speech-update', 'status-update', 'metadata'],
