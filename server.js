@@ -6,18 +6,25 @@ const app     = express();
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname)));
 
-const CLAUDE_KEY = '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';
-const EL_KEY     = 'sk_a2902f9f7e15502b886f81801697acdcf10e29ee485835bf';
+const CLAUDE_KEY = process.env.CLAUDE_KEY;
+const EL_KEY     = process.env.EL_KEY;
 
 // Cloned voice IDs — no accent, natural Indian speech
 const VOICES = {
-  en: '8P96TQQwDrf2YCUslZHJ',   // English cloned voice
-  hi: 'oLi1Vmxvpqb2NRdaiA47',   // Hindi cloned voice
-  pa: '57AfJZcOekDe9nRbKyTC',   // Punjabi cloned voice
+  en: process.env.EL_VOICE_EN,
+  hi: process.env.EL_VOICE_HI,
+  pa: process.env.EL_VOICE_PA,
 };
+
+// Startup check
+console.log('CeremonyAI starting...');
+console.log('Claude key:', CLAUDE_KEY ? '✅ set' : '❌ MISSING');
+console.log('EL key:', EL_KEY ? '✅ set' : '❌ MISSING');
+console.log('Voices EN/HI/PA:', VOICES.en ? '✅' : '❌', VOICES.hi ? '✅' : '❌', VOICES.pa ? '✅' : '❌');
 
 // ── Claude ──────────────────────────────────────────────────────────────────
 app.post('/api/claude', async (req, res) => {
+  if (!CLAUDE_KEY) return res.status(500).json({ error: 'CLAUDE_KEY not set in environment' });
   try {
     const r = await axios.post('https://api.anthropic.com/v1/messages', req.body, {
       headers: {
@@ -37,13 +44,11 @@ app.post('/api/claude', async (req, res) => {
 
 // ── ElevenLabs TTS — language-specific cloned voices ────────────────────────
 app.post('/api/tts', async (req, res) => {
+  if (!EL_KEY) return res.status(500).json({ error: 'EL_KEY not set in environment' });
   try {
     const { text, lang } = req.body;
 
-    // Pick the right cloned voice for this language
     const voiceId = VOICES[lang] || VOICES.en;
-
-    // For non-Hindi text, prepend Hindi primer to keep Indian phonetics
     const primedText = lang === 'hi' ? text : 'जी। ' + text;
 
     const r = await axios.post(
