@@ -5,6 +5,8 @@ const app     = express();
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname)));
+// Serve Vapi browser bundle
+app.get('/vapi-bundle.js', (_, res) => res.sendFile(path.join(__dirname, 'vapi-bundle.js')));
 
 const CLAUDE_KEY = process.env.CLAUDE_KEY;
 const EL_KEY     = process.env.EL_KEY;
