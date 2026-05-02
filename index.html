@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Ceremony Indian Cuisine × Zivio AI</title>
+<script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web/dist/vapi.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&family=Noto+Sans+Gurmukhi:wght@400;600&family=Noto+Sans+Devanagari:wght@400;600&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -518,30 +519,32 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--cream);mi
 </div><!-- /content -->
 </div><!-- /layout -->
 
-<!-- CALL MODAL -->
+<!-- CALL MODAL — Vapi Web SDK -->
 <div class="call-modal" id="call-modal">
   <div class="call-box">
     <div id="call-ico" style="font-size:50px;margin-bottom:12px">📞</div>
     <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--cream);margin-bottom:3px">Ceremony Indian Cuisine</div>
     <div style="font-size:11px;color:var(--mu);margin-bottom:16px">(905) 123-4567 · Powered by Zivio AI</div>
-    <div id="call-status" style="font-size:12px;color:var(--green2);min-height:18px;margin-bottom:10px"></div>
-    <div id="call-ripple" style="display:none;justify-content:center;gap:4px;align-items:flex-end;height:40px;margin-bottom:14px">
-      <div style="width:4px;background:var(--saffron);border-radius:3px;animation:rb .7s ease-in-out infinite .0s"></div>
-      <div style="width:4px;background:var(--saffron);border-radius:3px;animation:rb .7s ease-in-out infinite .1s"></div>
-      <div style="width:4px;background:var(--saffron);border-radius:3px;animation:rb .7s ease-in-out infinite .2s"></div>
+    <div id="call-status" style="font-size:13px;color:var(--green2);min-height:20px;margin-bottom:10px;font-weight:600"></div>
+
+    <!-- Volume bars — animate when AI speaking -->
+    <div id="call-ripple" style="display:none;justify-content:center;gap:4px;align-items:flex-end;height:44px;margin-bottom:12px">
+      <div style="width:4px;background:var(--saffron);border-radius:3px;animation:rb .7s ease-in-out infinite .00s"></div>
+      <div style="width:4px;background:var(--saffron);border-radius:3px;animation:rb .7s ease-in-out infinite .10s"></div>
+      <div style="width:4px;background:var(--saffron);border-radius:3px;animation:rb .7s ease-in-out infinite .20s"></div>
       <div style="width:4px;background:var(--saffron);border-radius:3px;animation:rb .7s ease-in-out infinite .15s"></div>
       <div style="width:4px;background:var(--saffron);border-radius:3px;animation:rb .7s ease-in-out infinite .05s"></div>
     </div>
-    <div id="call-log" style="background:#080604;border-radius:10px;padding:12px;min-height:70px;max-height:150px;overflow-y:auto;text-align:left;font-size:11px;line-height:1.7;color:var(--cream2);margin-bottom:18px;display:none"></div>
-    <div style="display:flex;gap:12px;justify-content:center">
-      <button id="call-mic-btn" onclick="toggleCallMic()" style="width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--saffron),var(--saffron2));border:none;font-size:19px;cursor:pointer">🎤</button>
-      <button onclick="endCall()" style="width:42px;height:42px;border-radius:50%;background:#5A1010;border:none;font-size:16px;cursor:pointer;align-self:center">📵</button>
-    </div>
-    <div id="call-type-row" style="display:flex;gap:8px;margin-top:12px;width:100%">
-      <input id="call-type-in" placeholder="Type your order here…" style="flex:1;background:#151210;border:1px solid #3A2F1E;border-radius:20px;padding:8px 14px;font-size:12px;color:#F2E8D5;font-family:inherit;outline:none">
-      <button onclick="submitCallType()" style="padding:8px 14px;border-radius:20px;background:linear-gradient(135deg,#E8860A,#F5A832);border:none;color:#000;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">Send</button>
-    </div>
-    <div style="font-size:10px;color:var(--mu);margin-top:6px">🎤 Tap mic to speak OR type above</div>
+
+    <!-- Live transcript -->
+    <div id="call-log" style="background:#080604;border:1px solid #2A2015;border-radius:10px;padding:12px;min-height:80px;max-height:160px;overflow-y:auto;text-align:left;font-size:11px;line-height:1.8;color:var(--cream2);margin-bottom:16px"></div>
+
+    <!-- User volume indicator when speaking -->
+    <div id="user-speaking" style="display:none;font-size:11px;color:#FF8080;margin-bottom:10px;font-weight:600">🎤 Listening…</div>
+
+    <!-- Single end button — Vapi handles everything else -->
+    <button onclick="endCall()" id="end-call-btn" style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#8C1A1A,#C03030);border:none;font-size:22px;cursor:pointer;box-shadow:0 4px 16px rgba(140,26,26,.4)">📵</button>
+    <div style="font-size:10px;color:var(--mu);margin-top:10px">Speak naturally · 📵 to end</div>
   </div>
 </div>
 
@@ -1158,130 +1161,229 @@ function detectLangFromText(text) {
   if (/[\u0900-\u097F]/.test(text)) return 'hi';        // Devanagari
   return 'en';
 }
-const CALL_SYS = `You answer calls at Ceremony Indian Cuisine — "Celebrate the Taste of India". Mississauga, Ontario.
-You are NOT AI — you are a real warm team member. 1-2 sentences max. Natural, warm, like a local.
-Match caller's language EXACTLY — Punjabi, Hindi, or English. Auto-detect and match.
-Take orders. Give prices accurately when asked. Answer any question professionally.
-If you don't know something — say "Let me check that for you" professionally.
-Never restart if second person talks — continue the same order naturally.
-FULL MENU WITH PRICES: Butter Chicken $18, Lamb Chops $24, Garlic Naan $4, Dal Makhani $14, Palak Paneer $16, Paneer Tikka $14, Chicken Tikka $14, Biryani $14, Gulab Jamun $5, Mango Lassi $4, and 200+ more dishes. All non-veg curries $18. Full bar available.
-HOURS: Mon-Sun 11am-11pm | HALAL: Yes, all meat halal | LOCATION: Mississauga, Ontario`;
+// ── VAPI CALL SYSTEM ──────────────────────────────────────────────────────────
+const VAPI_PUBLIC_KEY = '933376a2-dba6-4143-91f9-d7fc9d6b4fd2';
+const CEREMONY_MENU = `FULL CEREMONY MENU WITH PRICES:
+VEG APPETIZERS: Paneer Tikka $14, Soya Chaap $14, Pani Puri $8, Dahi Puri $9, Tikki Chaat $9, Samosa Chana $8, Veg Tacos $10, Single Samosa $6, Bhel Puri $8, Chat Papdi $9, Fries $7, Mushroom Tikka $14, Pav Bhaji $10, Dahi Bhalla $9, Dahi Kebab $11, Noodle Burger $9, Tikki Burger $7, Veg Nachos $11, Raj Kachori $9, Chana Bhatura $10, Chana Puri $10, Amritsari Kulcha $12, Hara Bhara Kebab $11, Masala Papad $7, Roasted Papad $4
+NON VEG APPETIZERS: Bihari Chicken Tikka $17, Malai Chicken Tikka $17, Tandoori Chicken Tikka Breast $18, Achari Chicken $17, Chicken Tikka $14, Chicken Kebab $14, Wings $12, Tandoori Chicken Leg 2pc $10, Tandoori Drumstick 4pc $13, Cat Fish $17, Salmon Fish Tikka $23, Amritsari Fish $13, Chilli Fish $13, Lahori Fish $23, Lamb Chops $24, Chicken Tacos $12, Fish Tacos $12
+CHINESE: Hakka Noodles $12, Chilli Paneer $15, Chilli Mushroom $14, Veg Momos $14-16, Veg Fried Rice $11, Veg Manchurian $14, Chilli Chicken $19, Chicken Lollipop $15, Chicken Fried Rice $17, Non-Veg Momos $15-16, Soya Chilli $14, Egg Fried Rice $14
+VEG CURRIES $14-16: Aloo Gobi, Bhindi Do Pyaza, Dal Makhani $14, Dal Tadka $14, Baigan Bharta, Malai Kofta, Mutter Mushroom, Karahi Paneer, Shahi Paneer, Paneer Labaradar, Paneer Bhurji, Chana Masala $14, Paneer Pasanda, Paneer Tikka Masala, Palak Paneer, Mushroom Do Pyaza, Saag, Soya Chaap Masala, Methi Malai Mutter, Navratan Korma, Mix Vegetable, Kadhi Pakoda
+NON VEG CURRIES all $18: Chicken Curry, Butter Chicken, Chicken Tikka Masala, Karahi Chicken, Goat Curry, Karahi Goat, Goat Saag, Egg Curry, Charsi Chicken, Goat Rogan Josh, Chicken Korma, Goat Korma, Rara Chicken, Rara Goat, Chicken Rogan Josh, Kadhai Chicken, Chicken Saag, Goat Bhuna, Chicken Bhuna, Meethi Malai Goat, Meethi Malai Chicken
+BREADS: Butter Naan $4, Garlic Naan $4, Masala Naan $4, Tandoori Roti $2, Lachha Paratha $5, Plain Paratha $4, Tawa Roti $3, Makki Roti $3, Keema Naan $12
+RICE: Pulao Rice $5, Jeera Rice $5, Veg Biryani $13, Chicken Biryani $14, Goat Biryani $14
+DRINKS: Mango Lassi $4, Rose Lassi $4, Sweet Lassi $3, Mango Shake $8, Strawberry Shake $8, Orange Mojito $8, Lemon Mojito $8, Tea $3, Coffee $4, Water $1
+DESSERTS: Gulab Jamun $5, Rasmalai $5, Malai Kulfi $15, Kulfi Falooda $10, Gajarela $5, Ice Cream $5, Chocolate Brownie $10
+PLATTERS: Non-Veg Platter $26.99, Veg Platter $23.99
+BAR: Beer $5-6, Wine $7/glass, Whiskey $6-9, Vodka $5-9, Cocktails $12, Mocktails $8`;
 
-function startCallDemo() {
+const VAPI_SYSTEM = `You are the voice assistant for Ceremony Indian Cuisine in Mississauga, Ontario. You answer calls. You are NOT an AI — you are a warm, natural, friendly team member named Priya.
+
+LANGUAGE RULE — CRITICAL:
+Listen to the FIRST thing the caller says. If they speak Punjabi — reply in Punjabi for the ENTIRE call. If Hindi — reply in Hindi. If English — reply in English. Never switch languages mid-call unless they do first.
+
+TONE: Warm, natural, conversational. Like a real local person. Short responses — 1-2 sentences max. Natural pauses. Never read out long lists.
+
+YOUR JOB: Greet → Take order → Confirm items + prices → Give total → Confirm pickup time (20-25 mins).
+
+RULES:
+- Never say you are AI
+- Give prices accurately when asked
+- If unsure — say "Let me check that for you, one moment"
+- Never restart if a second person speaks — continue the same order
+- If they just want to know something (hours, halal, location) — answer and ask if they want to order
+
+RESTAURANT INFO:
+Hours: Monday to Sunday, 11am to 11pm
+Location: Mississauga, Ontario  
+Halal: Yes, 100% halal
+Bar: Full bar available
+Pickup time: 20-25 minutes
+
+${CEREMONY_MENU}
+
+ENGLISH GREETING: "Thank you for calling Ceremony Indian Cuisine! This is Priya, how can I help you today?"
+PUNJABI GREETING: "ਸਤ ਸ੍ਰੀ ਅਕਾਲ ਜੀ! Ceremony Indian Cuisine ਤੋਂ ਪ੍ਰਿਆ ਬੋਲ ਰਹੀ ਹਾਂ। ਦੱਸੋ ਜੀ, ਕੀ ਚਾਹੀਦਾ?"
+HINDI GREETING: "नमस्ते जी! Ceremony Indian Cuisine से प्रिया बोल रही हूं। बताइए, आज क्या लेना चाहेंगे?"`;
+
+let vapiInstance = null;
+let vapiCallActive = false;
+
+function initVapi() {
+  if (vapiInstance) return vapiInstance;
+  try {
+    vapiInstance = new Vapi(VAPI_PUBLIC_KEY);
+
+    vapiInstance.on('call-start', () => {
+      vapiCallActive = true;
+      setCS('Connected — Ceremony AI', 'var(--green2)');
+      document.getElementById('call-ico').textContent = '🔊';
+      document.getElementById('call-ripple').style.display = 'flex';
+      addCallLog('Call connected. Speak naturally in any language.', 'system');
+    });
+
+    vapiInstance.on('call-end', () => {
+      vapiCallActive = false;
+      document.getElementById('call-ripple').style.display = 'none';
+      document.getElementById('user-speaking').style.display = 'none';
+      setCS('Call ended', 'var(--mu)');
+      document.getElementById('call-ico').textContent = '📞';
+      setTimeout(() => {
+        document.getElementById('call-modal').style.display = 'none';
+      }, 1500);
+    });
+
+    vapiInstance.on('speech-start', () => {
+      // AI is speaking
+      document.getElementById('call-ripple').style.display = 'flex';
+      document.getElementById('user-speaking').style.display = 'none';
+      setCS('Ceremony AI speaking…', 'var(--saffron)');
+    });
+
+    vapiInstance.on('speech-end', () => {
+      // AI finished — user's turn
+      document.getElementById('call-ripple').style.display = 'none';
+      setCS('🎤 Your turn — speak now', 'var(--green2)');
+    });
+
+    vapiInstance.on('volume-level', (vol) => {
+      // Show user speaking indicator when user is loud enough
+      if (vol > 0.05) {
+        document.getElementById('user-speaking').style.display = 'block';
+        document.getElementById('call-ripple').style.display = 'none';
+        setCS('🎤 Listening…', '#FF8080');
+      }
+    });
+
+    vapiInstance.on('message', (msg) => {
+      // Show live transcript
+      if (msg.type === 'transcript') {
+        if (msg.role === 'assistant' && msg.transcriptType === 'final') {
+          addCallLog(msg.transcript, 'ai');
+        } else if (msg.role === 'user' && msg.transcriptType === 'final') {
+          addCallLog(msg.transcript, 'caller');
+          document.getElementById('user-speaking').style.display = 'none';
+        }
+      }
+    });
+
+    vapiInstance.on('error', (e) => {
+      console.error('Vapi error:', e);
+      setCS('Connection issue — retrying…', '#C03030');
+      document.getElementById('call-ico').textContent = '⚠️';
+    });
+
+    return vapiInstance;
+  } catch(e) {
+    console.error('Vapi init failed:', e);
+    return null;
+  }
+}
+
+function addCallLog(text, role) {
+  const log = document.getElementById('call-log');
+  if (!log) return;
+  const d = document.createElement('div');
+  const isSystem = role === 'system';
+  d.style.cssText = `margin-bottom:6px;padding:6px 9px;border-radius:8px;font-size:11px;line-height:1.6;
+    background:${role==='ai'?'rgba(232,134,10,.1)':isSystem?'rgba(255,255,255,.03)':'rgba(255,255,255,.04)'};
+    color:${role==='ai'?'var(--saffron2)':isSystem?'var(--mu)':'var(--cream2)'}`;
+  if (!isSystem) d.innerHTML = `<b style="font-size:9px;color:var(--mu);display:block;margin-bottom:2px">${role==='ai'?'CEREMONY AI':'YOU'}</b>`;
+  d.innerHTML += text;
+  log.appendChild(d);
+  log.scrollTop = log.scrollHeight;
+}
+
+function setCS(msg, col) {
+  const s = document.getElementById('call-status');
+  if (s) { s.textContent = msg; s.style.color = col || 'var(--green2)'; }
+}
+
+async function startCallDemo() {
   const modal = document.getElementById('call-modal');
   if (!modal) return;
-  modal.style.display = 'flex'; callActive = true; callHistory = [];
+
+  // Reset UI
+  modal.style.display = 'flex';
   document.getElementById('call-log').innerHTML = '';
-  document.getElementById('call-log').style.display = 'none';
   document.getElementById('call-ripple').style.display = 'none';
+  document.getElementById('user-speaking').style.display = 'none';
   document.getElementById('call-ico').textContent = '📞';
+  setCS('Connecting…', 'var(--mu)');
+
+  const vapi = initVapi();
+  if (!vapi) {
+    setCS('Vapi unavailable', '#C03030');
+    return;
+  }
+
+  // Simulate dialling UX
   setCS('Dialling (905) 123-4567…', 'var(--mu)');
-  let d=0, a=setInterval(()=>{d=(d+1)%4;setCS('Dialling (905) 123-4567'+'…'.slice(0,d+1),'var(--mu)');},400);
-  setTimeout(()=>{ clearInterval(a); setCS('🔔 Ringing…','var(--saffron)'); document.getElementById('call-ico').textContent='📳'; },1800);
-  setTimeout(()=>{
-    setCS('Connected — Ceremony AI answering', 'var(--green2)');
-    document.getElementById('call-log').style.display='block';
-    document.getElementById('call-ico').textContent='🔊';
-    // Greet in current language tab — default English
-    const greetings = {
-      en: 'Thank you for calling Ceremony! What can I get for you?',
-      pa: 'ਸਤ ਸ੍ਰੀ ਅਕਾਲ ਜੀ! ਕੀ ਚਾਹੀਦਾ ਤੁਹਾਨੂੰ?',
-      hi: 'नमस्ते जी! आज क्या लेना चाहेंगे?',
-      auto: 'Thank you for calling Ceremony! What can I get for you?'
-    };
-    const greeting = greetings[LANG] || greetings.en;
-    const greetLang = (LANG === 'auto') ? 'en' : LANG;
-    callSpeak(greeting, greetLang);
-    // Enable Enter key on type input
-    setTimeout(() => {
-      const ti = document.getElementById('call-type-in');
-      if (ti) ti.addEventListener('keydown', e => { if (e.key === 'Enter') submitCallType(); });
-    }, 100);
-  },3200);
-}
-function endCall() { callActive=false; callMicOn=false; try{callRec?.stop()}catch(e){} if(currentAudio){currentAudio.pause();currentAudio=null;} document.getElementById('call-modal').style.display='none'; }
-function setCS(msg,col) { const s=document.getElementById('call-status'); if(s){s.textContent=msg;s.style.color=col||'var(--green2)';} }
-function addCallLog(text,role) {
-  const log=document.getElementById('call-log'); if(!log) return;
-  const d=document.createElement('div');
-  d.style.cssText=`margin-bottom:7px;padding:7px 9px;border-radius:8px;font-size:11px;line-height:1.6;background:${role==='ai'?'rgba(232,134,10,.1)':'rgba(255,255,255,.04)'};color:${role==='ai'?'var(--saffron2)':'var(--cream2)'}`;
-  d.innerHTML=`<b style="font-size:9px;color:var(--mu);display:block">${role==='ai'?'CEREMONY AI':'YOU'}</b>${text}`;
-  log.appendChild(d); log.scrollTop=log.scrollHeight;
-}
-function callSpeak(text, lang) {
-  addCallLog(text,'ai');
-  document.getElementById('call-ripple').style.display='flex';
-  setCS('Ceremony AI speaking…','var(--saffron)');
-  const resolvedLang = (lang && lang !== 'auto') ? lang : detectLangFromText(text);
-  speak(text, resolvedLang);
-  // Estimate duration: ~100ms per word, min 2s
-  const words = text.split(' ').length;
-  const duration = Math.max(2000, words * 350);
-  setTimeout(()=>{
-    document.getElementById('call-ripple').style.display='none';
-    if(callActive) setCS('Tap 🎤 to speak','var(--green2)');
-  }, duration);
-}
-async function handleCallSpeech(text) {
-  if (!text||!callActive) return;
-  addCallLog(text,'caller'); setCS('…','var(--mu)');
-  callHistory.push({role:'user',content:text}); if(callHistory.length>16) callHistory.splice(0,2);
+  await new Promise(r => setTimeout(r, 1000));
+  setCS('🔔 Ringing…', 'var(--saffron)');
+  document.getElementById('call-ico').textContent = '📳';
+
+  // Determine first message based on language tab
+  const firstMessages = {
+    en: 'Thank you for calling Ceremony Indian Cuisine! This is Priya, how can I help you today?',
+    pa: 'ਸਤ ਸ੍ਰੀ ਅਕਾਲ ਜੀ! Ceremony Indian Cuisine ਤੋਂ ਪ੍ਰਿਆ ਬੋਲ ਰਹੀ ਹਾਂ। ਦੱਸੋ ਜੀ, ਕੀ ਚਾਹੀਦਾ?',
+    hi: 'नमस्ते जी! Ceremony Indian Cuisine से प्रिया बोल रही हूं। बताइए, आज क्या लेना चाहेंगे?',
+    auto: 'Thank you for calling Ceremony Indian Cuisine! This is Priya, how can I help you today?'
+  };
+
+  // Voice per language — use cloned EN/HI, Noor for PA
+  const voiceIds = {
+    en: process?.env?.EL_VOICE_EN || '8P96TQQwDrf2YCUslZHJ',
+    hi: 'oLi1Vmxvpqb2NRdaiA47',
+    pa: 'vT0wMbLG5dssaBsksrb6',
+    auto: '8P96TQQwDrf2YCUslZHJ'
+  };
+
+  const callLang = (LANG === 'auto') ? 'en' : LANG;
+
   try {
-    const r=await fetch('/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:100,system:CALL_SYS,messages:callHistory})});
-    const d=await r.json(); const reply=d.content?.[0]?.text?.trim();
-    if(reply){
-      callHistory.push({role:'assistant',content:reply});
-      // Detect language from actual reply text for correct voice
-      const replyLang = (LANG !== 'auto') ? LANG : detectLangFromText(reply);
-      callSpeak(reply, replyLang);
-    }
-  } catch(e) { setCS('Connection issue','#C03030'); }
-}
-function submitCallType() {
-  const inp = document.getElementById('call-type-in');
-  const text = inp?.value.trim();
-  if (!text || !callActive) return;
-  inp.value = '';
-  handleCallSpeech(text);
-}
-
-function toggleCallMic() {
-  if (!callActive) return;
-  const btn=document.getElementById('call-mic-btn');
-  if (callMicOn) { try{callRec?.stop()}catch(e){} callMicOn=false; btn.style.background='linear-gradient(135deg,var(--saffron),var(--saffron2))'; return; }
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if (!SR) { const t=prompt('Type what you want to say:'); if(t) handleCallSpeech(t); return; }
-  if (currentAudio) { currentAudio.pause(); currentAudio=null; }
-  callRec=new SR();
-  callRec.lang = LANG==='pa'?'pa-IN':LANG==='hi'?'hi-IN':'en-IN';
-  callRec.continuous=false; callRec.interimResults=false;
-  callRec.onstart=()=>{callMicOn=true;setCS('🎤 Listening…','#FF8080');btn.style.background='linear-gradient(135deg,#7A1010,#C02020)';document.getElementById('call-ico').textContent='🎤';};
-  let gotResult = false;
-  callRec.onresult=e=>{
-    gotResult = true;
-    const t=e.results[0][0].transcript;
-    callMicOn=false;
-    btn.style.background='linear-gradient(135deg,var(--saffron),var(--saffron2))';
-    document.getElementById('call-ico').textContent='🔊';
-    setCS('Processing…','var(--mu)');
-    handleCallSpeech(t);
-  };
-  callRec.onerror=e=>{
-    if (gotResult) return;
-    callMicOn=false;
-    btn.style.background='linear-gradient(135deg,var(--saffron),var(--saffron2))';
-    console.warn('Mic error:', e.error);
-    const t=prompt('Could not hear — type your message:');
-    if(t) handleCallSpeech(t);
-  };
-  callRec.onend=()=>{
-    callMicOn=false;
-    btn.style.background='linear-gradient(135deg,var(--saffron),var(--saffron2))';
-  };
-  callRec.start();
+    await vapi.start({
+      model: {
+        provider: 'anthropic',
+        model: 'claude-haiku-4-5-20251001',
+        messages: [{ role: 'system', content: VAPI_SYSTEM }],
+        temperature: 0.7,
+        maxTokens: 150,
+      },
+      voice: {
+        provider: '11labs',
+        voiceId: voiceIds[callLang] || voiceIds.en,
+        model: 'eleven_multilingual_v2',
+        stability: callLang === 'pa' ? 0.45 : 0.40,
+        similarityBoost: callLang === 'pa' ? 0.72 : 0.75,
+        style: 0.10,
+        useSpeakerBoost: callLang === 'pa',
+      },
+      firstMessage: firstMessages[LANG] || firstMessages.en,
+      clientMessages: ['transcript', 'speech-update', 'volume-level'],
+      transcriber: {
+        provider: 'deepgram',
+        model: 'nova-2',
+        language: callLang === 'pa' ? 'hi' : callLang === 'hi' ? 'hi' : 'en-IN',
+      },
+    });
+  } catch(e) {
+    console.error('Vapi start error:', e);
+    setCS('Could not start call — check mic permissions', '#C03030');
+    document.getElementById('call-ico').textContent = '⚠️';
+  }
 }
 
-// ── ONLOAD ────────────────────────────────────────────────────────────────────
+function endCall() {
+  if (vapiInstance && vapiCallActive) {
+    try { vapiInstance.stop(); } catch(e) {}
+  }
+  vapiCallActive = false;
+  document.getElementById('call-modal').style.display = 'none';
+  document.getElementById('call-ripple').style.display = 'none';
+  document.getElementById('user-speaking').style.display = 'none';
+}
+
+// ── ONLOAD // ── ONLOAD ────────────────────────────────────────────────────────────────────
 window.onload = () => {
   // ElevenLabs cloned voices only — no browser TTS
   S('demo', document.querySelector('.nb.c-saffron'));
