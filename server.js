@@ -52,24 +52,10 @@ app.post('/api/tts', async (req, res) => {
     let fixed = text;
 
     if (!isIndianScript) {
+      // Minimal fixes only — voice handles Indian food words naturally
       fixed = fixed
-        .replace(/\bVeg\b/g, 'Vej')
-        .replace(/\bveg\b/g, 'vej')
-        .replace(/\bNon-Veg\b/g, 'Non-Vej')
-        .replace(/\bnon-veg\b/g, 'non-vej')
-        .replace(/\bLassi\b/g, 'Luhsi')
-        .replace(/\blassi\b/g, 'luhsi')
         .replace(/\bGulab Jamun\b/gi, 'Gulab Jamoon')
         .replace(/\bBiryani\b/gi, 'Biryaani');
-    }
-
-    // Punjabi-specific text fixes
-    if (lang === 'pa') {
-      fixed = fixed
-        .replace(/Ceremony/g, 'Seremoni')
-        .replace(/\$(\d+)/g, '$1 ਡਾਲਰ')
-        .replace(/\btotal\b/gi, 'ਕੁੱਲ')
-        .replace(/\border\b/gi, 'ਆਰਡਰ');
     }
 
     const voiceId = VOICES[lang] || VOICES.en;
