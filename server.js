@@ -52,10 +52,69 @@ app.post('/api/tts', async (req, res) => {
     let fixed = text;
 
     if (!isIndianScript) {
-      // Minimal fixes only — voice handles Indian food words naturally
+      // Indian food phonetics — how the voice should actually say these words
       fixed = fixed
-        .replace(/\bGulab Jamun\b/gi, 'Gulab Jamoon')
-        .replace(/\bBiryani\b/gi, 'Biryaani');
+        // Proteins & Cheese
+        .replace(/\bPaneer\b/g, 'Puh-neer')
+        .replace(/\bpaneer\b/g, 'puh-neer')
+        // Breads
+        .replace(/\bNaan\b/g, 'Naan')
+        .replace(/\bRoti\b/g, 'Roh-tee')
+        .replace(/\broti\b/g, 'roh-tee')
+        .replace(/\bParatha\b/g, 'Puh-rah-tah')
+        .replace(/\bparatha\b/g, 'puh-rah-tah')
+        .replace(/\bKulcha\b/g, 'Kool-cha')
+        .replace(/\bkulcha\b/g, 'kool-cha')
+        .replace(/\bBhatura\b/g, 'Buh-too-rah')
+        .replace(/\bbhatura\b/g, 'buh-too-rah')
+        // Drinks
+        .replace(/\bLassi\b/g, 'Luh-see')
+        .replace(/\blassi\b/g, 'luh-see')
+        .replace(/\bChai\b/g, 'Chye')
+        // Dishes
+        .replace(/\bBiryani\b/gi, 'Beer-yah-nee')
+        .replace(/\bTikka\b/g, 'Tih-kah')
+        .replace(/\btikka\b/g, 'tih-kah')
+        .replace(/\bMakhani\b/g, 'Muh-kha-nee')
+        .replace(/\bmakhani\b/g, 'muh-kha-nee')
+        .replace(/\bSaag\b/g, 'Saag')
+        .replace(/\bKorma\b/g, 'Kor-mah')
+        .replace(/\bkorma\b/g, 'kor-mah')
+        .replace(/\bKarahi\b/g, 'Kuh-rah-hee')
+        .replace(/\bkarahi\b/g, 'kuh-rah-hee')
+        .replace(/\bKadhai\b/g, 'Kuh-dye')
+        .replace(/\bkadhai\b/g, 'kuh-dye')
+        .replace(/\bMasala\b/g, 'Muh-sah-lah')
+        .replace(/\bmasala\b/g, 'muh-sah-lah')
+        .replace(/\bTandoori\b/g, 'Tan-doo-ree')
+        .replace(/\btandoori\b/g, 'tan-doo-ree')
+        .replace(/\bChana\b/g, 'Chuh-nah')
+        .replace(/\bchana\b/g, 'chuh-nah')
+        .replace(/\bDal\b/g, 'Daal')
+        .replace(/\bdal\b/g, 'daal')
+        .replace(/\bKulfi\b/g, 'Kool-fee')
+        .replace(/\bkulfi\b/g, 'kool-fee')
+        .replace(/\bGulab Jamun\b/gi, 'Goo-laab Juh-moon')
+        .replace(/\bRasmalai\b/gi, 'Ruhs-muh-lye')
+        .replace(/\bSamosa\b/g, 'Suh-moh-sah')
+        .replace(/\bsamosa\b/g, 'suh-moh-sah')
+        .replace(/\bPakora\b/g, 'Puh-koh-rah')
+        .replace(/\bpakora\b/g, 'puh-koh-rah')
+        .replace(/\bChaat\b/g, 'Chaat')
+        .replace(/\bBhaji\b/g, 'Bhuh-jee')
+        .replace(/\bMutter\b/g, 'Muh-ter')
+        .replace(/\bPalak\b/g, 'Puh-luck')
+        .replace(/\bpalak\b/g, 'puh-luck')
+        .replace(/\bGobi\b/g, 'Goh-bee')
+        .replace(/\bgobi\b/g, 'goh-bee')
+        .replace(/\bAloo\b/g, 'Ah-loo')
+        .replace(/\baloo\b/g, 'ah-loo')
+        .replace(/\bKofta\b/g, 'Kohf-tah')
+        .replace(/\bkofta\b/g, 'kohf-tah')
+        .replace(/\bKebab\b/g, 'Kuh-bob')
+        .replace(/\bkebab\b/g, 'kuh-bob')
+        .replace(/\bRogan Josh\b/gi, 'Roh-gun Josh')
+        .replace(/\bNaan\b/g, 'Naan');
     }
 
     const voiceId = VOICES[lang] || VOICES.en;
