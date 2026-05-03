@@ -386,6 +386,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--cream);mi
   <div class="ph-h">Everything included.<br><em>One flat price. Forever.</em></div>
   <div class="ph-s">Every feature below is included in your monthly fee. No per-order fees, no commissions, no surprises.</div>
   <div class="fg">
+    <div class="fc"><div class="fc-ico">📞</div><div class="fc-title">20+ Simultaneous Calls</div><div class="fc-desc">20 customers call at the same time — all 20 get answered instantly. Zero busy signal. Zero missed order. Ever.</div><div class="fc-tag">Unlimited Scale</div></div>
     <div class="fc"><div class="fc-ico">📞</div><div class="fc-title">24/7 Phone Ordering</div><div class="fc-desc">AI voice answers in 2 rings. Takes full order, confirms prices, sends to kitchen. Even at 2am.</div><div class="fc-tag">Voice AI</div></div>
     <div class="fc"><div class="fc-ico">💬</div><div class="fc-title">WhatsApp Ordering</div><div class="fc-desc">On your existing number. Customers text the same number they always have. Zero change for them.</div><div class="fc-tag">Existing Number</div></div>
     <div class="fc"><div class="fc-ico">🗣️</div><div class="fc-title">3 Languages Auto-detect</div><div class="fc-desc">English, Punjabi, Hindi + code-switching. Auto-detected instantly. Dedicated cloned voice per language.</div><div class="fc-tag">Brampton-Ready</div></div>
@@ -1176,37 +1177,66 @@ DESSERTS: Gulab Jamun $5, Rasmalai $5, Malai Kulfi $15, Kulfi Falooda $10, Gajar
 PLATTERS: Non-Veg Platter $26.99, Veg Platter $23.99
 BAR: Beer $5-6, Wine $7/glass, Whiskey $6-9, Vodka $5-9, Cocktails $12, Mocktails $8`;
 
-const VAPI_SYSTEM = `You are Ria, a team member at Ceremony Indian Cuisine, Mississauga. You answer the phone. You are a real person — never say you are AI.
+const VAPI_SYSTEM = `You are Ria, a team member at Ceremony Indian Cuisine, Mississauga. Real person, not AI.
 
-LANGUAGE: Match caller's language exactly from their first sentence. Punjabi only → Punjabi. Hindi only → Hindi. English → English. Never switch.
+LANGUAGE: Match caller's FIRST sentence exactly. Punjabi → Punjabi only. Hindi → Hindi only. English → English only. Never switch.
 
-PERSONALITY: Warm, quick, natural. Like a real person at a restaurant counter. Short sentences. Never robotic. Never over-explain.
+PERSONALITY: Warm, natural, quick. Like a real person at the counter. Short sentences. Conversational. Never robotic or formal.
 
-HOW TO TAKE AN ORDER:
-1. Listen to everything the customer says before responding.
-2. When they pause or finish — confirm ALL items together in ONE sentence: "Perfect, [item], [item] and [item] — anything else?"
-3. Never say "Got it" more than once. Never repeat the same phrase twice.
-4. When they say they are done — give the total ONLY IF THEY ASK, otherwise just say "Ready in 20 to 25 minutes!"
-5. End EVERY call warmly: "Thank you so much for calling Ceremony — we look forward to seeing you! Have a wonderful day!"
+FILLER WORDS: While processing, say natural fillers like "Sure, one moment", "Of course", "Absolutely" — never stay silent.
 
-PRICE RULES — CRITICAL:
-- NEVER mention any price at any point unless the customer directly asks "how much", "what is the price", "kitna", "keemat", "price kya hai"
-- Do NOT say the total unless asked
-- Do NOT confirm order with prices
-- If you accidentally say a price — do not repeat it
+ORDER FLOW:
+1. Listen fully before responding — never interrupt mid-sentence
+2. Confirm ALL items ONCE together: "Perfect — [item], [item] and [item]. Anything else?"
+3. Never confirm items one by one
+4. When customer says done: "Your order will be ready in 20 to 25 minutes. Thank you for calling Ceremony — see you soon!"
+5. Say pickup time ONCE only — never repeat it
+
+PRICE: NEVER mention price unless customer asks "how much", "price", "kitna", "keemat". No exceptions.
+
+ACCURACY: Match dish names EXACTLY as customer says. Paneer Makhani ≠ Paneer Tikka Masala. Never substitute.
+
+RESERVATION FLOW — when customer wants to book a table:
+Collect these details one at a time, naturally and warmly:
+1. Name: "May I have the name for the reservation?"
+2. Date: "Which date works for you?"
+3. Time: "And what time would you like to come in?"
+4. Party size: "How many people will be joining?"
+5. Phone number: "And a good phone number to reach you on?"
+6. Special requests: "Any special occasion or requests — birthday, anniversary, dietary needs, high chair for little ones?"
+Confirm everything: "Perfect [Name], I have you booked for [number] people on [date] at [time]. We look forward to seeing you at Ceremony! Is there anything else?"
+Walk-ins are always welcome for small groups.
+
+COMMON QUESTIONS — answer directly, never say you don't know:
+- Kids menu: "We don't have a separate kids menu but Samosa, Tikki Burger and Mango Lassi are very popular with kids!"
+- Parking: "Yes, free parking is available right at the restaurant."
+- Delivery: "We offer pickup only at the moment — no delivery."
+- Halal: "Yes, all our meat is 100% halal certified."
+- Vegetarian options: "Absolutely — we have a full veg menu with over 20 dishes."
+- Alcohol/bar: "Yes, we have a full bar — beer, wine, spirits and cocktails."
+- Hours: "We are open every day from 11am to 11pm."
+- Location: "We are in Mississauga, Ontario."
+- Spice level: "We can adjust — just say mild, medium or spicy when you order."
+- Allergy: "Please let our kitchen know your allergy and we will do our best to accommodate."
+- Large groups: "For large group bookings, let me take your details and our manager will call you back to arrange everything."
+
+SMART DEFLECTION — if you genuinely don't know:
+Say: "Great question — let me have our manager call you back shortly to confirm. May I take your phone number?"
+Take their number warmly, then say: "Perfect, our manager will be in touch very soon. Anything else I can help you with?"
+NEVER say "I don't know" or "call the restaurant" or transfer to anyone.
 
 STRICT RULES:
-- ONE response per turn — never send multiple messages
-- NEVER say "Got it. Got it." or repeat any phrase
-- Match dish names EXACTLY — Paneer Makhani ≠ Paneer Tikka Masala
-- Pickup time is ALWAYS 20 to 25 minutes — never any other time
-- Never restart if second person joins — continue same order
+- ONE response per turn only
+- Never say you are AI
+- Never repeat any phrase
+- Pickup is ALWAYS 20 to 25 minutes
+- Second person joins: continue same order naturally
 
-RESTAURANT: Hours Mon-Sun 11am-11pm | 100% Halal | Full bar | Mississauga ON
+RESTAURANT: Mon-Sun 11am-11pm | 100% Halal | Full bar | Mississauga ON
 
 ${CEREMONY_MENU}
 
-IMPORTANT: Greeting already done. Do NOT greet. Start taking the order directly.`;
+Greeting already done. Take the order or help the customer directly.`;
 
 let vapiInstance = null;
 let vapiCallActive = false;
@@ -1231,11 +1261,12 @@ async function initVapi() {
       vapiCallActive = false;
       document.getElementById('call-ripple').style.display = 'none';
       document.getElementById('user-speaking').style.display = 'none';
-      setCS('Call ended', 'var(--mu)');
-      document.getElementById('call-ico').textContent = '📞';
+      setCS('✅ Call completed', 'var(--green2)');
+      document.getElementById('call-ico').textContent = '✅';
+      addCallLog('━━ Call ended — order sent to kitchen ━━', 'system');
       setTimeout(() => {
         document.getElementById('call-modal').style.display = 'none';
-      }, 1500);
+      }, 3000);
     });
 
     vapiInstance.on('speech-start', () => {
@@ -1252,11 +1283,12 @@ async function initVapi() {
     });
 
     vapiInstance.on('volume-level', (vol) => {
-      // Show user speaking indicator when user is loud enough
-      if (vol > 0.05) {
+      if (vol > 0.03) {
         document.getElementById('user-speaking').style.display = 'block';
         document.getElementById('call-ripple').style.display = 'none';
-        setCS('🎤 Listening…', '#FF8080');
+        setCS('🎤 Listening — speak clearly…', '#FF8080');
+      } else if (!vapiCallActive) {
+        document.getElementById('user-speaking').style.display = 'none';
       }
     });
 
@@ -1327,16 +1359,38 @@ async function startCallDemo() {
     return;
   }
 
-  // Simulate dialling UX
-  setCS('🔔 Connecting…', 'var(--saffron)');
+  // Play ring tone immediately to mask Vapi connection delay
+  setCS('🔔 Ringing…', 'var(--saffron)');
   document.getElementById('call-ico').textContent = '📳';
+  let ringInterval = null;
+  try {
+    const actx = new (window.AudioContext || window.webkitAudioContext)();
+    const playRing = () => {
+      const o = actx.createOscillator();
+      const g = actx.createGain();
+      o.connect(g); g.connect(actx.destination);
+      o.frequency.value = 480; o.type = 'sine';
+      g.gain.setValueAtTime(0, actx.currentTime);
+      g.gain.linearRampToValueAtTime(0.15, actx.currentTime + 0.1);
+      g.gain.linearRampToValueAtTime(0.15, actx.currentTime + 0.9);
+      g.gain.linearRampToValueAtTime(0, actx.currentTime + 1.0);
+      o.start(actx.currentTime); o.stop(actx.currentTime + 1.0);
+    };
+    playRing();
+    ringInterval = setInterval(playRing, 2000);
+    // Stop ring when call connects
+    const stopRing = () => { if(ringInterval) { clearInterval(ringInterval); ringInterval = null; } };
+    vapiInstance.once('call-start', stopRing);
+    vapiInstance.once('error', stopRing);
+    setTimeout(stopRing, 8000); // Max 8s ring
+  } catch(re) { console.warn('Ring audio failed:', re); }
 
   // Determine first message based on language tab
   const firstMessages = {
-    en: 'Hi, this is Ria from Ceremony Indian Cuisine — how can I help you?',
-    pa: 'ਹੈਲੋ, ਮੈਂ Ceremony Indian Cuisine ਤੋਂ ਰਿਆ ਬੋਲ ਰਹੀ ਹਾਂ — ਦੱਸੋ ਜੀ, ਕਿਵੇਂ ਮਦਦ ਕਰਾਂ?',
-    hi: 'हेलो, मैं Ceremony Indian Cuisine से रिया बोल रही हूं — बताइए, कैसे मदद करूं?',
-    auto: 'Hi, this is Ria from Ceremony Indian Cuisine — how can I help you?'
+    en: 'Thank you for calling Ceremony Indian Cuisine, this is Ria — how can I help you?',
+    pa: 'Ceremony Indian Cuisine ਵਿੱਚ ਕਾਲ ਕਰਨ ਲਈ ਧੰਨਵਾਦ, ਮੈਂ ਰਿਆ ਬੋਲ ਰਹੀ ਹਾਂ — ਦੱਸੋ ਜੀ?',
+    hi: 'Ceremony Indian Cuisine में कॉल करने के लिए धन्यवाद, मैं रिया बोल रही हूं — बताइए?',
+    auto: 'Thank you for calling Ceremony Indian Cuisine, this is Ria — how can I help you?'
   };
 
   // Voice IDs per language
@@ -1355,31 +1409,40 @@ async function startCallDemo() {
         provider: 'anthropic',
         model: 'claude-haiku-4-5-20251001',
         messages: [{ role: 'system', content: VAPI_SYSTEM }],
-        temperature: 0.7,
-        maxTokens: 150,
+        temperature: 0.6,
+        maxTokens: 120,       // Shorter = faster response
       },
       voice: {
-        provider: 'azure',
-        voiceId: callLang === 'hi' ? 'hi-IN-SwaraNeural' : callLang === 'pa' ? 'en-IN-NeerjaNeural' : 'en-IN-NeerjaNeural',
-        speed: 1.0,
+        provider: '11labs',
+        voiceId: voiceIds[callLang] || voiceIds.en,
+        model: 'eleven_multilingual_v2',
+        stability: 0.40,
+        similarityBoost: 0.75,
+        style: 0.10,
+        useSpeakerBoost: false,
+        speed: 1.05,
       },
       firstMessage: firstMessages[LANG] || firstMessages.en,
-      clientMessages: ['transcript', 'speech-update', 'status-update', 'metadata'],
+      clientMessages: ['transcript', 'speech-update', 'status-update', 'metadata', 'conversation-update'],
       transcriber: {
         provider: 'deepgram',
-        model: 'nova-2-general',
-        language: callLang === 'hi' ? 'hi' : 'en-IN',
+        model: 'nova-2',
+        language: 'multi',    // Multi-language — handles EN/HI/PA naturally in one call
         smartFormat: true,
-        endpointing: 400,
+        endpointing: 380,
       },
       backgroundDenoisingEnabled: true,
       backgroundSound: 'off',
-      silenceTimeoutSeconds: 25,
+      silenceTimeoutSeconds: 30,
       maxDurationSeconds: 1800,
       responseDelaySeconds: 0,
       llmRequestDelaySeconds: 0,
       numWordsToInterruptAssistant: 3,
-      endCallPhrases: ['bye', 'goodbye', 'thank you bye', 'shukriya', 'dhanyawad'],
+      backchannel: {           // Filler words — no silence while AI thinks
+        enabled: true,
+        phrases: ['Sure, one moment', 'Of course', 'Got it', 'Absolutely'],
+      },
+      endCallPhrases: ['bye', 'goodbye', 'thank you bye', 'shukriya', 'dhanyawad', 'alvida', 'theek hai bye'],
     });
   } catch(e) {
     console.error('Vapi start error:', e);
