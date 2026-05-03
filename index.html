@@ -1165,6 +1165,7 @@ function detectLangFromText(text) {
 // ── VAPI CALL SYSTEM ──────────────────────────────────────────────────────────
 const VAPI_PUBLIC_KEY = '933376a2-dba6-4143-91f9-d7fc9d6b4fd2';
 const CEREMONY_MENU = `FULL CEREMONY MENU WITH PRICES:
+(Pronunciation guide for AI: Paneer=puh-neer, Tikka=tih-kah, Naan=naan, Lassi=luh-see, Biryani=beer-yah-nee, Dal=daal, Roti=roh-tee, Paratha=puh-rah-tah, Masala=muh-saa-lah, Tandoori=taan-doo-ree, Makhani=muh-kaa-nee, Kulfi=kool-fee, Samosa=suh-moh-sah, Chana=chaa-nah, Aloo=aa-loo, Palak=paa-luk, Korma=kor-mah, Karahi=kuh-rah-ee, Kebab=kuh-bab, Bhaji=bhaa-jee, Kulcha=kool-chah, Gulab Jamun=goo-laab juh-moon)
 VEG APPETIZERS: Paneer Tikka $14, Soya Chaap $14, Pani Puri $8, Dahi Puri $9, Tikki Chaat $9, Samosa Chana $8, Veg Tacos $10, Single Samosa $6, Bhel Puri $8, Chat Papdi $9, Fries $7, Mushroom Tikka $14, Pav Bhaji $10, Dahi Bhalla $9, Dahi Kebab $11, Noodle Burger $9, Tikki Burger $7, Veg Nachos $11, Raj Kachori $9, Chana Bhatura $10, Chana Puri $10, Amritsari Kulcha $12, Hara Bhara Kebab $11, Masala Papad $7, Roasted Papad $4
 NON VEG APPETIZERS: Bihari Chicken Tikka $17, Malai Chicken Tikka $17, Tandoori Chicken Tikka Breast $18, Achari Chicken $17, Chicken Tikka $14, Chicken Kebab $14, Wings $12, Tandoori Chicken Leg 2pc $10, Tandoori Drumstick 4pc $13, Cat Fish $17, Salmon Fish Tikka $23, Amritsari Fish $13, Chilli Fish $13, Lahori Fish $23, Lamb Chops $24, Chicken Tacos $12, Fish Tacos $12
 CHINESE: Hakka Noodles $12, Chilli Paneer $15, Chilli Mushroom $14, Veg Momos $14-16, Veg Fried Rice $11, Veg Manchurian $14, Chilli Chicken $19, Chicken Lollipop $15, Chicken Fried Rice $17, Non-Veg Momos $15-16, Soya Chilli $14, Egg Fried Rice $14
@@ -1182,6 +1183,14 @@ const VAPI_SYSTEM = `You are Ria, a team member at Ceremony Indian Cuisine, Miss
 LANGUAGE: Match caller's FIRST sentence exactly. Punjabi → Punjabi only. Hindi → Hindi only. English → English only. Never switch.
 
 PERSONALITY: Warm, natural, quick. Like a real person at the counter. Short sentences. Conversational. Never robotic or formal.
+
+PRONUNCIATION — CRITICAL: You MUST pronounce Indian food words correctly with Indian accent:
+Paneer = "puh-neer" | Tikka = "tih-kah" | Naan = "naan" | Lassi = "luh-see"
+Biryani = "beer-yah-nee" | Dal = "daal" | Roti = "roh-tee" | Masala = "muh-saa-lah"
+Makhani = "muh-kaa-nee" | Tandoori = "taan-doo-ree" | Korma = "kor-mah"
+Samosa = "suh-moh-sah" | Aloo = "aa-loo" | Palak = "paa-luk" | Karahi = "kuh-rah-ee"
+Kulfi = "kool-fee" | Gulab Jamun = "goo-laab juh-moon" | Paratha = "puh-rah-tah"
+Never say "pan-eer", "tih-kuh", "muh-sah-luh" or any anglicised version.
 
 FILLER WORDS: While processing, say natural fillers like "Sure, one moment", "Of course", "Absolutely" — never stay silent.
 
@@ -1413,13 +1422,8 @@ async function startCallDemo() {
         maxTokens: 120,       // Shorter = faster response
       },
       voice: {
-        provider: '11labs',
-        voiceId: voiceIds[callLang] || voiceIds.en,
-        model: 'eleven_multilingual_v2',
-        stability: 0.40,
-        similarityBoost: 0.75,
-        style: 0.10,
-        useSpeakerBoost: false,
+        provider: 'azure',
+        voiceId: callLang === 'hi' ? 'hi-IN-SwaraNeural' : callLang === 'pa' ? 'pa-IN-VaaniNeural' : 'en-IN-NeerjaNeural',
         speed: 1.05,
       },
       firstMessage: firstMessages[LANG] || firstMessages.en,
