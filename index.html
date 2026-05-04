@@ -387,6 +387,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--cream);mi
   <div class="ph-s">Every feature below is included in your monthly fee. No per-order fees, no commissions, no surprises.</div>
   <div class="fg">
     <div class="fc"><div class="fc-ico">📞</div><div class="fc-title">20+ Simultaneous Calls</div><div class="fc-desc">20 customers call at the same time — all 20 get answered instantly. Zero busy signal. Zero missed order. Ever.</div><div class="fc-tag">Unlimited Scale</div></div>
+    <div class="fc"><div class="fc-ico">🔀</div><div class="fc-title">Secondary Line / Overflow</div><div class="fc-desc">Restaurant phone rings 4 times unanswered → Ria picks up instantly. Staff never lose an order when busy.</div><div class="fc-tag">No Missed Calls</div></div>
     <div class="fc"><div class="fc-ico">📞</div><div class="fc-title">24/7 Phone Ordering</div><div class="fc-desc">AI voice answers in 2 rings. Takes full order, confirms prices, sends to kitchen. Even at 2am.</div><div class="fc-tag">Voice AI</div></div>
     <div class="fc"><div class="fc-ico">💬</div><div class="fc-title">WhatsApp Ordering</div><div class="fc-desc">On your existing number. Customers text the same number they always have. Zero change for them.</div><div class="fc-tag">Existing Number</div></div>
     <div class="fc"><div class="fc-ico">🗣️</div><div class="fc-title">3 Languages Auto-detect</div><div class="fc-desc">English, Punjabi, Hindi + code-switching. Auto-detected instantly. Dedicated cloned voice per language.</div><div class="fc-tag">Brampton-Ready</div></div>
@@ -1198,8 +1199,9 @@ ORDER FLOW:
 1. Listen fully before responding — never interrupt mid-sentence
 2. Confirm ALL items ONCE together: "Perfect — [item], [item] and [item]. Anything else?"
 3. Never confirm items one by one
-4. When customer says done: "Your order will be ready in 20 to 25 minutes. Thank you for calling Ceremony — see you soon!"
-5. Say pickup time ONCE only — never repeat it
+4. When customer says done — say ONCE: "Your order will be ready in 20 to 25 minutes. Thank you for calling Ceremony — see you soon!"
+5. After saying farewell — END THE CALL IMMEDIATELY. Do not say anything else. Do not wait. Hang up.
+6. Say pickup time ONCE only — never repeat it
 
 PRICE: NEVER mention price unless customer asks "how much", "price", "kitna", "keemat". No exceptions.
 
@@ -1433,16 +1435,17 @@ async function startCallDemo() {
         model: 'nova-2',
         language: 'multi',    // Multi-language — handles EN/HI/PA naturally in one call
         smartFormat: true,
-        endpointing: 380,
+        endpointing: 300,
       },
       backgroundDenoisingEnabled: true,
       backgroundSound: 'off',
-      silenceTimeoutSeconds: 30,
+      silenceTimeoutSeconds: 15,
       maxDurationSeconds: 1800,
       responseDelaySeconds: 0,
       llmRequestDelaySeconds: 0,
       numWordsToInterruptAssistant: 3,
       endCallPhrases: ['bye', 'goodbye', 'thank you bye', 'shukriya', 'dhanyawad', 'alvida', 'theek hai bye'],
+      endCallFunctionEnabled: true,
     });
   } catch(e) {
     console.error('Vapi start error:', e);
