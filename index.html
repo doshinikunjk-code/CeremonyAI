@@ -1432,38 +1432,7 @@ async function startCallDemo() {
   const callLang = (LANG === 'auto') ? 'en' : LANG;
 
   try {
-    await vapi.start({
-      model: {
-        provider: 'openai',
-        model: 'gpt-4o-mini',
-        messages: [{ role: 'system', content: VAPI_SYSTEM }],
-        temperature: 0.5,
-        maxTokens: 150,
-      },
-      voice: {
-        provider: 'azure',
-        voiceId: 'en-IN-NeerjaNeural',  // Same voice all languages — most fluent Indian female
-        speed: 1.05,
-      },
-      firstMessage: firstMessages[LANG] || firstMessages.en,
-      clientMessages: ['transcript', 'speech-update', 'status-update', 'metadata', 'conversation-update'],
-      transcriber: {
-        provider: 'deepgram',
-        model: 'nova-2',
-        language: 'hi',
-        smartFormat: true,
-        endpointing: 300,
-      },
-      backgroundDenoisingEnabled: true,
-      backgroundSound: 'off',
-      silenceTimeoutSeconds: 30,
-      maxDurationSeconds: 1800,
-      responseDelaySeconds: 0,
-      llmRequestDelaySeconds: 0,
-      numWordsToInterruptAssistant: 3,
-      endCallPhrases: ['bye', 'goodbye', 'thank you bye', 'shukriya', 'dhanyawad', 'alvida', 'theek hai bye'],
-      endCallFunctionEnabled: true,
-    });
+    await vapi.start('92285f2d-18ed-4a77-bafb-90255f1f3713');
   } catch(e) {
     console.error('Vapi start error:', e);
     setCS('Could not start call — check mic permissions', '#C03030');
