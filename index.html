@@ -1432,7 +1432,17 @@ async function startCallDemo() {
   const callLang = (LANG === 'auto') ? 'en' : LANG;
 
   try {
-    await vapi.start('92285f2d-18ed-4a77-bafb-90255f1f3713');
+    await vapi.start({
+      assistantId: '92285f2d-18ed-4a77-bafb-90255f1f3713',
+      assistantOverrides: {
+        transcriber: {
+          provider: 'custom-transcriber',
+          server: {
+            url: 'https://ceremonyai-production.up.railway.app/api/transcribe',
+          },
+        },
+      },
+    });
   } catch(e) {
     console.error('Vapi start error:', e);
     setCS('Could not start call — check mic permissions', '#C03030');
