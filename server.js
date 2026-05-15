@@ -48,7 +48,7 @@ app.post('/api/vapi-webhook', (req, res) => {
   res.status(200).json({ received: true });
 });
 
- — supports Punjabi/Hindi/English natively ──────
+// OpenAI Whisper transcriber - supports Punjabi/Hindi/English
 app.post('/api/transcribe', async (req, res) => {
   if (!OPENAI_KEY) return res.status(500).json({ error: 'OPENAI_KEY not set' });
   try {
