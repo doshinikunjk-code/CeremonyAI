@@ -41,7 +41,41 @@ app.post('/api/claude', async (req, res) => {
   }
 });
 
-// ── Vapi Custom LLM endpoint — proxies Vapi voice calls to Claude ────────────
+const OPENAI_KEY = process.env.OPENAI_KEY;
+
+// ── OpenAI Whisper transcriber — supports Punjabi/Hindi/English natively ──────
+app.post('/api/transcribe', async (req, res) => {
+  if (!OPENAI_KEY) return res.status(500).json({ error: 'OPENAI_KEY not set' });
+  try {
+    const chunks = [];
+    req.on('data', chunk => chunks.push(chunk));
+    req.on('end', async () => {
+      const audioBuffer = Buffer.concat(chunks);
+      const FormData = require('form-data');
+      const form = new FormData();
+      form.append('file', audioBuffer, { filename: 'audio.webm', contentType: 'audio/webm' });
+      form.append('model', 'whisper-1');
+      form.append('language', '');  // Empty = auto-detect (handles EN/HI/PA)
+      form.append('response_format', 'json');
+
+      const r = await axios.post('https://api.openai.com/v1/audio/transcriptions', form, {
+        headers: {
+          ...form.getHeaders(),
+          'Authorization': `Bearer ${OPENAI_KEY}`
+        },
+        timeout: 10000
+      });
+
+      console.log('Whisper transcribed:', r.data.text?.substring(0, 60));
+      res.json({ text: r.data.text, language: r.data.language });
+    });
+  } catch(e) {
+    console.error('Transcribe error:', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+
 app.post('/api/vapi-llm', async (req, res) => {
   if (!CLAUDE_KEY) return res.status(500).json({ error: 'CLAUDE_KEY not set' });
   try {
