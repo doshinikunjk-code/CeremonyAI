@@ -1438,7 +1438,7 @@ async function startCallDemo() {
         model: 'claude-haiku-4-5-20251001',
         messages: [{ role: 'system', content: VAPI_SYSTEM }],
         temperature: 0.6,
-        maxTokens: 120,       // Shorter = faster response
+        maxTokens: 150,       // Enough for complete Hindi/Punjabi responses
       },
       voice: {
         provider: 'azure',
@@ -1456,7 +1456,7 @@ async function startCallDemo() {
       },
       backgroundDenoisingEnabled: true,
       backgroundSound: 'off',
-      silenceTimeoutSeconds: 15,
+      silenceTimeoutSeconds: 30,
       maxDurationSeconds: 1800,
       responseDelaySeconds: 0,
       llmRequestDelaySeconds: 0,
