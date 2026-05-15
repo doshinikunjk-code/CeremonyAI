@@ -1187,6 +1187,7 @@ You greet in English. The moment the customer responds — detect their language
 - If they say anything in Hindi (namaste, haan, kya, chahiye, or ANY Hindi word) → switch to Hindi IMMEDIATELY and stay in Hindi for the entire call
 - If they speak English → stay in English
 - NEVER ask the customer what language they prefer — detect it yourself
+- If you cannot understand — say "Sorry, could you please repeat that?" in their language
 - NEVER mix languages — once detected, stay in that language completely
 - Speak naturally in each language — conversational, warm, not translated English
 
@@ -1449,9 +1450,10 @@ async function startCallDemo() {
       transcriber: {
         provider: 'deepgram',
         model: 'nova-2',
-        language: 'multi',
+        language: 'hi',       // hi covers Hindi + Punjabi better than multi for Indian languages
         smartFormat: true,
         endpointing: 300,
+        keyterms: ['paneer', 'tikka', 'naan', 'lassi', 'biryani', 'butter chicken', 'dal makhani', 'roti', 'samosa', 'ceremony'],
       },
       backgroundDenoisingEnabled: true,
       backgroundSound: 'off',
