@@ -1432,7 +1432,16 @@ async function startCallDemo() {
   const callLang = (LANG === 'auto') ? 'en' : LANG;
 
   try {
-    await vapi.start('92285f2d-18ed-4a77-bafb-90255f1f3713');
+    // Pick assistant based on active language tab
+    const ASSISTANTS = {
+      en:   '92285f2d-18ed-4a77-bafb-90255f1f3713',  // English
+      hi:   '4a7b9d87-1359-4bcf-9533-1926bad18641',  // Hindi
+      pa:   '6f80ad99-7308-405b-be15-15010a8d1d2c',  // Punjabi
+      auto: '92285f2d-18ed-4a77-bafb-90255f1f3713',  // Default English
+    };
+    const assistantId = ASSISTANTS[LANG] || ASSISTANTS.auto;
+    console.log('Starting call with lang:', LANG, '| assistant:', assistantId);
+    await vapi.start(assistantId);
   } catch(e) {
     console.error('Vapi start error:', e);
     setCS('Could not start call — check mic permissions', '#C03030');
