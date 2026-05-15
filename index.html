@@ -1434,8 +1434,9 @@ async function startCallDemo() {
   try {
     await vapi.start({
       model: {
-        provider: 'anthropic',
-        model: 'claude-3-5-haiku-20241022',
+        provider: 'custom-llm',
+        url: 'https://ceremonyai-production.up.railway.app/api/vapi-llm',
+        model: 'ceremony-ria',
         messages: [{ role: 'system', content: VAPI_SYSTEM }],
         temperature: 0.5,
         maxTokens: 150,

@@ -41,7 +41,46 @@ app.post('/api/claude', async (req, res) => {
   }
 });
 
-// ── ElevenLabs TTS ──────────────────────────────────────────────────────────
+// ── Vapi Custom LLM endpoint — proxies Vapi voice calls to Claude ────────────
+app.post('/api/vapi-llm', async (req, res) => {
+  if (!CLAUDE_KEY) return res.status(500).json({ error: 'CLAUDE_KEY not set' });
+  try {
+    const { messages, max_tokens, temperature } = req.body;
+
+    // Vapi sends OpenAI-format messages — pass directly to Claude
+    const r = await axios.post('https://api.anthropic.com/v1/messages', {
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: max_tokens || 150,
+      temperature: temperature || 0.5,
+      system: messages?.find(m => m.role === 'system')?.content || '',
+      messages: messages?.filter(m => m.role !== 'system') || []
+    }, {
+      headers: {
+        'x-api-key': CLAUDE_KEY,
+        'anthropic-version': '2023-06-01',
+        'Content-Type': 'application/json'
+      },
+      timeout: 15000
+    });
+
+    // Return OpenAI-compatible format that Vapi expects
+    const text = r.data.content?.[0]?.text || '';
+    res.json({
+      id: 'ceremony-' + Date.now(),
+      object: 'chat.completion',
+      choices: [{
+        index: 0,
+        message: { role: 'assistant', content: text },
+        finish_reason: 'stop'
+      }],
+      usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
+    });
+    console.log('Vapi LLM OK | response:', text.substring(0, 60));
+  } catch(e) {
+    console.error('Vapi LLM error:', e.response?.status, e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
 app.post('/api/tts', async (req, res) => {
   if (!EL_KEY) return res.status(500).json({ error: 'EL_KEY not set' });
   try {
