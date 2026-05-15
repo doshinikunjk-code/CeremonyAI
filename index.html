@@ -1450,10 +1450,9 @@ async function startCallDemo() {
       transcriber: {
         provider: 'deepgram',
         model: 'nova-2',
-        language: 'hi',       // hi covers Hindi + Punjabi better than multi for Indian languages
+        language: 'hi',
         smartFormat: true,
         endpointing: 300,
-        keyterms: ['paneer', 'tikka', 'naan', 'lassi', 'biryani', 'butter chicken', 'dal makhani', 'roti', 'samosa', 'ceremony'],
       },
       backgroundDenoisingEnabled: true,
       backgroundSound: 'off',
